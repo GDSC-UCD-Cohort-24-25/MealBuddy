@@ -14,7 +14,12 @@ const YourFridge = () => {
     fetchIngredients();
   }, []);
 
-  
+  return (
+    <View>
+      <FlatList
+        data={ingredients}
+        renderItem={({ item }) => <Text>{item.name}</Text>}
+        keyExtractor={(item, index) => index.toString()}
       />
       {/* Add functionality to edit/delete ingredients */}
     </View>
