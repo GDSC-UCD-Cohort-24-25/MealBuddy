@@ -1,5 +1,6 @@
 {
   "expo": {
+    "entryPoint": "./App.js",
     "name": "MealBuddy",
     "slug": "MealBuddy",
     "version": "1.0.0",
@@ -39,4 +40,5 @@
     }
   }
 }
+
 
