@@ -1,0 +1,34 @@
+# General Requirements
+1. Node.js (https://nodejs.org/) - Install Node.js and npm.
+2. Expo CLI - Install globally using:
+   npm install -g expo-cli
+
+# Project Dependencies (Run in Project Directory)
+1. Install all project dependencies:
+   npm install
+
+2. React Navigation - For navigation setup:
+   npm install @react-navigation/native react-native-screens react-native-safe-area-context react-native-gesture-handler react-native-reanimated react-navigation-stack @react-navigation/bottom-tabs
+
+3. Firebase - For backend services:
+   npm install firebase
+
+4. React Native Dotenv - For environment variable management:
+   npm install react-native-dotenv
+
+5. Axios - For API requests (e.g., OpenAI):
+   npm install axios
+
+6. React Native Image Picker - For uploading images (e.g., grocery receipts):
+   npm install react-native-image-picker
+
+# iOS-Specific Setup (if not using Expo Managed Workflow)
+1. Install CocoaPods (for iOS native dependencies):
+   sudo gem install cocoapods
+2. Install iOS Pods (Run in the ios/ directory):
+   cd ios && pod install
+
+# Environment File Setup
+1. Create a `.env` file in the project root and add the following keys:
+   OPENAI_API_KEY=YOUR_OPENAI_API_KEY
+   # Add any other necessary keys here (e.g., Firebase keys)

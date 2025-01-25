@@ -1,11 +1,29 @@
-import React from 'react';
-import { View, Text } from 'react-native';
+import React, { useState } from 'react';
+import { View, TextInput, Button } from 'react-native';
+import { signUp, signIn } from '../services/auth_service';
 
 const Settings = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleSignUp = () => signUp(email, password);
+  const handleSignIn = () => signIn(email, password);
+
   return (
     <View>
-      <Text>Settings Screen</Text>
-      {/* Add account settings and user preferences here */}
+      <TextInput
+        placeholder="Email"
+        value={email}
+        onChangeText={setEmail}
+      />
+      <TextInput
+        placeholder="Password"
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+      />
+      <Button title="Sign Up" onPress={handleSignUp} />
+      <Button title="Sign In" onPress={handleSignIn} />
     </View>
   );
 };
