@@ -3,10 +3,24 @@
     "name": "MealBuddy",
     "slug": "mealbuddy",
     "version": "1.0.0",
-    "entryPoint": "./App.js",
-    "platforms": ["ios", "android", "web"],
-    "assetBundlePatterns": ["**/*"],
-    "newArchEnabled": false
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [], 
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.yourcompany.mealbuddy",
+      "buildNumber": "1.0.0",
+      "newArchEnabled": true
+    },
+    "android": {
+      "package": "com.yourcompany.mealbuddy",
+      "newArchEnabled": true
+    },
+    "web": {
+    }
   }
 }
 
