@@ -1,44 +1,26 @@
 {
   "expo": {
-    "entryPoint": "./App.js",
     "name": "MealBuddy",
-    "slug": "MealBuddy",
+    "slug": "mealbuddy",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
-    "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "userInterfaceStyle": "light",
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [], 
     "ios": {
-      "googleServicesFile": "./GoogleService-Info.plist"
+      "supportsTablet": true,
+      "bundleIdentifier": "com.yourcompany.mealbuddy",
+      "buildNumber": "1.0.0",
+      "newArchEnabled": true
     },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      }
+      "package": "com.yourcompany.mealbuddy",
+      "newArchEnabled": true
     },
     "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
-    },
-    "plugins": [
-      "expo-router",
-      [
-        "expo-splash-screen",
-        {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
-        }
-      ]
-    ],
-    "experiments": {
-      "typedRoutes": true
     }
   }
 }
-
 
