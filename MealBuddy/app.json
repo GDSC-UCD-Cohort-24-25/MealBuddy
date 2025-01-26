@@ -1,12 +1,12 @@
 {
   "expo": {
-    "entryPoint": "./App.js",
     "name": "MealBuddy",
     "slug": "mealbuddy",
     "version": "1.0.0",
-    "platforms": ["ios", "android", "web"]
+    "entryPoint": "./App.js",
+    "platforms": ["ios", "android", "web"],
+    "assetBundlePatterns": ["**/*"],
+    "newArchEnabled": false
   }
 }
-
-
 
