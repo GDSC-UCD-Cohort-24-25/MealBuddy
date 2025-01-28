@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { View, TextInput, Button, StyleSheet } from 'react-native';
-import firebase from '../services/firebase_config';
+import { db } from '../services/firebase_config';
+import { collection, addDoc } from 'firebase/firestore';
 
 const AddIngredients = () => {
   const [ingredient, setIngredient] = useState('');
 
   const handleAddIngredient = async () => {
     try {
-      await firebase.firestore().collection('ingredients').add({ name: ingredient });
+      await addDoc(collection(db, 'ingredients'), { name: ingredient });
       console.log(`Ingredient Added: ${ingredient}`);
       setIngredient('');
     } catch (error) {
