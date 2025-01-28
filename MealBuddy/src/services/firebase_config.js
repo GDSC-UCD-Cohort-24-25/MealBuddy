@@ -27,6 +27,11 @@ const auth = initializeAuth(app, {
 
 export { app, auth };
 
-console.log('Initializing Firebase App:', app);
-console.log('Apps:', getApps());
-console.log('Firebase Config:', firebaseConfig);
+console.log('Firebase Initialized:', app);
+console.log('Active Apps:', getApps());
+
+console.log('Firebase Config Debug:', {
+  apiKey: process.env.FIREBASE_API_KEY,
+  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.FIREBASE_PROJECT_ID,
+});
