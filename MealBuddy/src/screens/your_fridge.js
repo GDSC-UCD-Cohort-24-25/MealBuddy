@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
-import firebase from '../services/firebase_config';
-
+import { db } from '../services/firebase_config';
+import { collection, getDocs } from 'firebase/firestore';
 
 const YourFridge = () => {
   const [ingredients, setIngredients] = useState([]);
@@ -10,7 +10,7 @@ const YourFridge = () => {
   useEffect(() => {
     const fetchIngredients = async () => {
       try {
-        const snapshot = await firebase.firestore().collection('ingredients').get();
+        const snapshot = await getDocs(collection(db, 'ingredients'));
         setIngredients(snapshot.docs.map(doc => doc.data()));
       } catch (error) {
         console.error('Error fetching ingredients:', error.message);
