@@ -33,4 +33,4 @@ export { app, auth, db };
 
 console.log('Firebase Initialized:', app);
 console.log('Active Apps:', getApps());
-console.log('Firebase Config Debug:', firebaseConfig);
+console.log('Firestore Initialized:', db);
