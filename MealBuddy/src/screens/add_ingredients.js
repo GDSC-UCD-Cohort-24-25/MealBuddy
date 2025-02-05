@@ -8,13 +8,23 @@ const AddIngredients = () => {
 
   const handleAddIngredient = async () => {
     try {
-      await addDoc(collection(db, 'ingredients'), { name: ingredient });
+      if (!auth.currentUser) {
+        Alert.alert('Error', 'You need to be logged in to add ingredients.');
+        return;
+      }
+  
+      await addDoc(collection(db, 'ingredients'), {
+        name: ingredient,
+        userId: auth.currentUser.uid, // Associate ingredient with the logged-in user
+      });
+  
       console.log(`Ingredient Added: ${ingredient}`);
       setIngredient('');
     } catch (error) {
       console.error('Error adding ingredient:', error.message);
     }
   };
+  
 
   return (
     <View style={styles.container}>
@@ -42,5 +52,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
 });
+
+
 
 export default AddIngredients;

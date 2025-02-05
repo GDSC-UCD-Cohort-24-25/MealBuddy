@@ -2,36 +2,40 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { db, auth } from '../services/firebase_config';
 import { doc, getDoc } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
 
 const ProfileScreen = () => {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        if (!auth.currentUser) {
-          console.error('No user is logged in');
-          return;
-        }
+    // Listen for authentication state changes
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        try {
+          const userRef = doc(db, 'users', user.uid);
+          const docSnap = await getDoc(userRef);
 
-        const userId = auth.currentUser.uid;
-        const docSnap = await getDoc(doc(db, 'users', userId));
-
-        if (docSnap.exists()) {
-          setUserProfile(docSnap.data());
-        } else {
-          console.log('User profile not found.');
+          if (docSnap.exists()) {
+            setUserProfile(docSnap.data());
+          } else {
+            console.log('User profile not found.');
+            setUserProfile(null);
+          }
+        } catch (error) {
+          console.error('Error fetching user profile:', error.message);
+        } finally {
+          setLoading(false);
         }
-      } catch (error) {
-        console.error('Error fetching user profile:', error.message);
-      } finally {
+      } else {
+        console.log('No user is logged in.');
+        setUserProfile(null);
         setLoading(false);
       }
-    };
+    });
 
-    fetchUserProfile();
-  }, []);
+    return () => unsubscribe(); // Cleanup the listener when the component unmounts
+  }, []); // ✅ Ensured proper dependency handling
 
   if (loading) {
     return (
