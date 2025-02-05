@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { View, TextInput, Button, Text, Alert, StyleSheet, Keyboard, TouchableWithoutFeedback, ActivityIndicator } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { signUp, signIn } from '../services/auth_service';
 import { db, auth } from '../services/firebase_config';
-import { collection, setDoc, doc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 
 const Settings = () => {
   const [mode, setMode] = useState(null); // 'signup' or 'login'
@@ -13,6 +14,7 @@ const Settings = () => {
   const [userProfile, setUserProfile] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const navigation = useNavigation();
 
   // Fetch user profile if logged in
   useEffect(() => {
@@ -22,6 +24,7 @@ const Settings = () => {
         const docSnap = await getDoc(userRef);
         if (docSnap.exists()) {
           setUserProfile(docSnap.data());
+          navigation.replace('ProfileScreen'); // Navigate to Profile after fetching
         }
       }
     };
@@ -65,12 +68,9 @@ const Settings = () => {
       // Set profile state to display in settings
       setUserProfile({ name, age });
 
-      // Clear input fields
-      setMode(null);
-      setEmail('');
-      setPassword('');
-      setName('');
-      setAge('');
+      // Navigate to ProfileScreen instead of Settings
+      navigation.replace('ProfileScreen');
+
     } catch (error) {
       setError(error.message);
       Alert.alert('Profile Submission Error', error.message);
@@ -92,13 +92,11 @@ const Settings = () => {
       const docSnap = await getDoc(doc(db, 'users', user.uid));
       if (docSnap.exists()) {
         setUserProfile(docSnap.data());
+        navigation.replace('ProfileScreen'); // Navigate after login
       } else {
         Alert.alert('Profile Not Found', 'No user profile found.');
       }
 
-      setMode(null);
-      setEmail('');
-      setPassword('');
     } catch (error) {
       setError(error.message);
       Alert.alert('Login Error', error.message);
