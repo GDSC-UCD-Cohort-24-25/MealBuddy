@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  View, TextInput, Button, Text, Alert, StyleSheet, Keyboard, 
+  View, TextInput, Button, Text, Alert, Keyboard, 
   TouchableWithoutFeedback, ActivityIndicator 
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { signUp, signIn } from '../services/auth_service';
 import { db, auth } from '../services/firebase_config';
 import { doc, setDoc, getDoc, writeBatch } from 'firebase/firestore';
+import styles from '../styles/settings_styles'; // Import styles
+import Colors from '../constants/Colors'; // Import theme colors
 
 const Settings = () => {
   const [mode, setMode] = useState(null); // 'signup' or 'login'
@@ -19,7 +21,6 @@ const Settings = () => {
   const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
 
-  // Fetch user profile if logged in
   useEffect(() => {
     const fetchUserProfile = async () => {
       if (auth.currentUser) {
@@ -63,14 +64,12 @@ const Settings = () => {
         throw new Error('User UID is undefined after login.');
       }
 
-      // Navigate instantly to ProfileScreen **before** Firestore update
       navigation.replace('ProfileScreen', { name, age });
 
-      // Firestore batch update (runs in the background)
       const batch = writeBatch(db);
       const userRef = doc(db, 'users', user.uid);
       batch.set(userRef, { name, age });
-      await batch.commit(); // Executes the Firestore write
+      await batch.commit();
 
       console.log('User profile saved successfully');
 
@@ -112,10 +111,9 @@ const Settings = () => {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={styles.container}>
         {loading ? (
-          <ActivityIndicator size="large" color="#007bff" />
+          <ActivityIndicator size="large" color={Colors.primary} />
         ) : (
           <>
-            {/* Show User Profile in Settings */}
             {userProfile ? (
               <View>
                 <Text style={styles.title}>Profile</Text>
@@ -124,19 +122,20 @@ const Settings = () => {
               </View>
             ) : (
               <>
-                {/* Show Sign Up / Log In Buttons */}
                 {mode === null && (
                   <>
-                    <Button title="Sign Up" onPress={() => setMode('signup')} />
-                    <View style={styles.spacer} />
-                    <Button title="Log In" onPress={() => setMode('login')} />
+                    <View style={styles.button_container}>
+                      <Button title="Sign Up" color={Colors.primary} onPress={() => setMode('signup')} />
+                    </View>
+                    <View style={styles.button_container}>
+                      <Button title="Log In" color={Colors.secondary} onPress={() => setMode('login')} />
+                    </View>
                   </>
                 )}
 
-                {/* Sign Up Form */}
                 {mode === 'signup' && (
                   <>
-                    {error ? <Text style={styles.errorText}>{error}</Text> : null}
+                    {error ? <Text style={styles.error_text}>{error}</Text> : null}
                     <TextInput
                       placeholder="Enter Email"
                       value={email}
@@ -151,14 +150,15 @@ const Settings = () => {
                       secureTextEntry
                       style={styles.input}
                     />
-                    <Button title="Submit" onPress={handleSignUp} />
+                    <View style={styles.button_container}>
+                      <Button title="Submit" color={Colors.primary} onPress={handleSignUp} />
+                    </View>
                   </>
                 )}
 
-                {/* Profile Form After Sign Up */}
                 {mode === 'profile' && (
                   <>
-                    {error ? <Text style={styles.errorText}>{error}</Text> : null}
+                    {error ? <Text style={styles.error_text}>{error}</Text> : null}
                     <TextInput
                       placeholder="Enter Your Name"
                       value={name}
@@ -172,14 +172,15 @@ const Settings = () => {
                       keyboardType="numeric"
                       style={styles.input}
                     />
-                    <Button title="Submit Profile" onPress={handleSubmitProfile} />
+                    <View style={styles.button_container}>
+                      <Button title="Submit Profile" color={Colors.primary} onPress={handleSubmitProfile} />
+                    </View>
                   </>
                 )}
                 
-                {/* Log In Form */}
                 {mode === 'login' && (
                   <>
-                    {error ? <Text style={styles.errorText}>{error}</Text> : null}
+                    {error ? <Text style={styles.error_text}>{error}</Text> : null}
                     <TextInput
                       placeholder="Enter Email"
                       value={email}
@@ -194,7 +195,9 @@ const Settings = () => {
                       secureTextEntry
                       style={styles.input}
                     />
-                    <Button title="Log In" onPress={handleLogIn} />
+                    <View style={styles.button_container}>
+                      <Button title="Log In" color={Colors.primary} onPress={handleLogIn} />
+                    </View>
                   </>
                 )}
               </>
@@ -205,40 +208,5 @@ const Settings = () => {
     </TouchableWithoutFeedback>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#f5f5f5',
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  text: {
-    fontSize: 18,
-    marginBottom: 5,
-  },
-  input: {
-    width: '100%',
-    padding: 10,
-    marginBottom: 15,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 5,
-    backgroundColor: '#fff',
-  },
-  errorText: {
-    color: 'red',
-    marginBottom: 10,
-  },
-  spacer: {
-    height: 20,
-  },
-});
 
 export default Settings;
