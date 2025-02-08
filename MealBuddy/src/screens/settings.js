@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, Button, Text, Alert, StyleSheet, Keyboard, TouchableWithoutFeedback, ActivityIndicator } from 'react-native';
+import { 
+  View, TextInput, Button, Text, Alert, StyleSheet, Keyboard, 
+  TouchableWithoutFeedback, ActivityIndicator 
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { signUp, signIn } from '../services/auth_service';
 import { db, auth } from '../services/firebase_config';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, writeBatch } from 'firebase/firestore';
 
 const Settings = () => {
   const [mode, setMode] = useState(null); // 'signup' or 'login'
@@ -24,7 +27,7 @@ const Settings = () => {
         const docSnap = await getDoc(userRef);
         if (docSnap.exists()) {
           setUserProfile(docSnap.data());
-          navigation.replace('ProfileScreen'); // Navigate to Profile after fetching
+          navigation.replace('ProfileScreen', { name: docSnap.data().name, age: docSnap.data().age });
         }
       }
     };
@@ -60,16 +63,16 @@ const Settings = () => {
         throw new Error('User UID is undefined after login.');
       }
 
+      // Navigate instantly to ProfileScreen **before** Firestore update
+      navigation.replace('ProfileScreen', { name, age });
+
+      // Firestore batch update (runs in the background)
+      const batch = writeBatch(db);
       const userRef = doc(db, 'users', user.uid);
-      await setDoc(userRef, { name, age });
+      batch.set(userRef, { name, age });
+      await batch.commit(); // Executes the Firestore write
 
       console.log('User profile saved successfully');
-
-      // Set profile state to display in settings
-      setUserProfile({ name, age });
-
-      // Navigate to ProfileScreen instead of Settings
-      navigation.replace('ProfileScreen');
 
     } catch (error) {
       setError(error.message);
@@ -92,7 +95,7 @@ const Settings = () => {
       const docSnap = await getDoc(doc(db, 'users', user.uid));
       if (docSnap.exists()) {
         setUserProfile(docSnap.data());
-        navigation.replace('ProfileScreen'); // Navigate after login
+        navigation.replace('ProfileScreen', { name: docSnap.data().name, age: docSnap.data().age });
       } else {
         Alert.alert('Profile Not Found', 'No user profile found.');
       }
@@ -172,7 +175,7 @@ const Settings = () => {
                     <Button title="Submit Profile" onPress={handleSubmitProfile} />
                   </>
                 )}
-
+                
                 {/* Log In Form */}
                 {mode === 'login' && (
                   <>
