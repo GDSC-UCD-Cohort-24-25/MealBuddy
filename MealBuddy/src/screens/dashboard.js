@@ -1,28 +1,37 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text } from 'react-native';
+import ProgressBar from '../components/progress_bar';
+import Tracker from '../components/tracker';
+import styles from '../styles/dashboard_styles';
 
 const Dashboard = () => {
+  const progressData = [
+    { label: 'Calories', value: 1200, maxValue: 2000 },
+    { label: 'Protein', value: 60, maxValue: 100 },
+    { label: 'Carbs', value: 150, maxValue: 250 },
+    { label: 'Fats', value: 40, maxValue: 70 },
+  ];
+
+  const trackerData = [
+    { label: 'Steps', value: 7500 },
+    { label: 'Water Intake', value: '2.5L' },
+  ];
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Welcome to MealBuddy!</Text>
-      <Text>Your dashboard will display your progress and stats here.</Text>
-      <Text>Example: Calorie Intake: 1200/2000</Text>
+      <Text style={styles.title}>Your Progress</Text>
+
+      {progressData.map((item, index) => (
+        <ProgressBar key={index} label={item.label} value={item.value} maxValue={item.maxValue} />
+      ))}
+
+      <View style={styles.tracker_container}>
+        {trackerData.map((item, index) => (
+          <Tracker key={index} label={item.label} value={item.value} />
+        ))}
+      </View>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f5f5f5',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-});
 
 export default Dashboard;
