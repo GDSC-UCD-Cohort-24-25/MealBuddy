@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, StyleSheet } from 'react-native';
-import { db } from '../services/firebase_config';
+import { View, TextInput, Button, StyleSheet, Alert } from 'react-native';
+import { db, auth } from '../services/firebase_config';
 import { collection, addDoc } from 'firebase/firestore';
+import { useNavigation } from "@react-navigation/native";
+
 
 const AddIngredients = () => {
   const [ingredient, setIngredient] = useState('');
+  const navigation = useNavigation();
 
   const handleAddIngredient = async () => {
     try {
@@ -12,19 +15,25 @@ const AddIngredients = () => {
         Alert.alert('Error', 'You need to be logged in to add ingredients.');
         return;
       }
+      if (!ingredient.trim()) { // ✅ Prevents empty submission
+        Alert.alert('Error', 'Ingredient cannot be empty.');
+        return;
+      }
   
       await addDoc(collection(db, 'ingredients'), {
-        name: ingredient,
+        name: ingredient.trim(),
         userId: auth.currentUser.uid, // Associate ingredient with the logged-in user
       });
   
       console.log(`Ingredient Added: ${ingredient}`);
       setIngredient('');
+      navigation.navigate("Your Fridge");
     } catch (error) {
       console.error('Error adding ingredient:', error.message);
+      Alert.alert('Error', 'Failed to add ingredient. Try again.');
     }
   };
-  
+
 
   return (
     <View style={styles.container}>
