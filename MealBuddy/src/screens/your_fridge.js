@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -10,7 +10,7 @@ import {
   Alert,
 } from "react-native";
 import { db, auth } from "../services/firebase_config";
-import { collection, query, where, getDocs, deleteDoc, doc } from "firebase/firestore";
+import { collection, query, where, orderBy, onSnapshot, deleteDoc, doc } from "firebase/firestore";
 import { useFocusEffect } from "@react-navigation/native";
 import { MaterialIcons } from "@expo/vector-icons"; // ✅ Trash icon
 
@@ -22,27 +22,26 @@ const YourFridge = () => {
   const [viewMode, setViewMode] = useState("grid");
   const [selectedItems, setSelectedItems] = useState(new Set()); // ✅ Track selected items
 
-  // ✅ Fetch Ingredients
-  const fetchIngredients = async () => {
-    try {
-      setLoading(true);
-      if (!auth.currentUser) {
-        console.error("❌ No user is logged in");
-        setIngredients([]);
-        setFilteredIngredients([]);
-        setLoading(false);
-        return;
-      }
+  // ✅ Fetch Ingredients (Real-time updates)
+  useEffect(() => {
+    if (!auth.currentUser) {
+      console.error("❌ No user is logged in");
+      setIngredients([]);
+      setFilteredIngredients([]);
+      setLoading(false);
+      return;
+    }
 
-      const userId = auth.currentUser.uid;
-      console.log("🔍 Fetching ingredients for user:", userId);
+    const userId = auth.currentUser.uid;
+    console.log("🔍 Fetching ingredients for user:", userId);
 
-      const ingredientsRef = collection(db, "ingredients");
-      const q = query(ingredientsRef, where("userId", "==", userId));
-      const snapshot = await getDocs(q);
+    const ingredientsRef = collection(db, "ingredients");
+    const q = query(ingredientsRef, where("userId", "==", userId), orderBy("name"));
 
-      console.log("📥 Firestore Data:", snapshot.docs.map((doc) => doc.data()));
-
+    // ✅ Real-time Firestore listener
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      console.log("📥 Firestore Data Updated:", snapshot.docs.map((doc) => doc.data()));
+      
       if (!snapshot.empty) {
         const data = snapshot.docs.map((doc) => ({
           id: doc.id,
@@ -55,18 +54,11 @@ const YourFridge = () => {
         setIngredients([]);
         setFilteredIngredients([]);
       }
-    } catch (error) {
-      console.error("🔥 Error fetching ingredients:", error.message);
-    } finally {
       setLoading(false);
-    }
-  };
+    });
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchIngredients();
-    }, [])
-  );
+    return () => unsubscribe(); // ✅ Cleanup Firestore listener on unmount
+  }, []);
 
   // ✅ Search function
   const handleSearch = (query) => {
@@ -114,7 +106,6 @@ const YourFridge = () => {
 
             await Promise.all(deletePromises);
             console.log("🗑️ Deleted:", [...selectedItems]);
-            fetchIngredients();
             setSelectedItems(new Set());
           } catch (error) {
             console.error("🔥 Error deleting ingredients:", error.message);
