@@ -212,7 +212,22 @@ const AuthScreen = ({ navigation }) => {
 };
 
 const MainTabs = () => (
-  <Tab.Navigator>
+  <Tab.Navigator
+    screenOptions={({ route }) => ({
+      tabBarIcon: ({ color, size }) => {
+        let iconName;
+        if (route.name === 'Dashboard') iconName = 'home-outline';
+        else if (route.name === 'Your Fridge') iconName = 'basket-outline';
+        else if (route.name === 'Add') iconName = 'add-circle-outline';
+        else if (route.name === 'Suggested Recipes') iconName = 'fast-food-outline';
+        else if (route.name === 'Profile') iconName = 'person-outline';
+
+        return <Ionicons name={iconName} size={size} color={color} />;
+      },
+      tabBarActiveTintColor: Colors.tabBarActive,
+      tabBarInactiveTintColor: Colors.tabBarInactive,
+    })}
+  >
     <Tab.Screen name="Dashboard" component={Dashboard} />
     <Tab.Screen name="Your Fridge" component={YourFridge} />
     <Tab.Screen name="Add" component={AddIngredients} />
@@ -221,15 +236,11 @@ const MainTabs = () => (
   </Tab.Navigator>
 );
 
-const TabNavigator = () => (
+export default () => (
   <NavigationContainer>
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {/* Authentication Screen */}
       <Stack.Screen name="AuthScreen" component={AuthScreen} />
-      {/* Main Tabs */}
       <Stack.Screen name="MainTabs" component={MainTabs} />
     </Stack.Navigator>
   </NavigationContainer>
 );
-
-export default TabNavigator;
