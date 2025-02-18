@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -11,8 +11,7 @@ import {
 } from "react-native";
 import { db, auth } from "../services/firebase_config";
 import { collection, query, where, orderBy, onSnapshot, deleteDoc, doc } from "firebase/firestore";
-import { useFocusEffect } from "@react-navigation/native";
-import { MaterialIcons } from "@expo/vector-icons"; // ✅ Trash icon
+import { MaterialIcons } from "@expo/vector-icons";
 
 const YourFridge = () => {
   const [ingredients, setIngredients] = useState([]);
@@ -20,44 +19,55 @@ const YourFridge = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState("grid");
-  const [selectedItems, setSelectedItems] = useState(new Set()); // ✅ Track selected items
+  const [selectedItems, setSelectedItems] = useState(new Set());
 
   // ✅ Fetch Ingredients (Real-time updates)
   useEffect(() => {
-    if (!auth.currentUser) {
-      console.error("❌ No user is logged in");
-      setIngredients([]);
-      setFilteredIngredients([]);
-      setLoading(false);
-      return;
-    }
-
-    const userId = auth.currentUser.uid;
-    console.log("🔍 Fetching ingredients for user:", userId);
-
-    const ingredientsRef = collection(db, "ingredients");
-    const q = query(ingredientsRef, where("userId", "==", userId), orderBy("name"));
-
-    // ✅ Real-time Firestore listener
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      console.log("📥 Firestore Data Updated:", snapshot.docs.map((doc) => doc.data()));
-      
-      if (!snapshot.empty) {
-        const data = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setIngredients(data);
-        setFilteredIngredients(data);
-      } else {
-        console.log("📭 No ingredients found.");
+    const fetchIngredients = async () => {
+      if (!auth.currentUser) {
+        console.error("❌ No user is logged in");
         setIngredients([]);
         setFilteredIngredients([]);
+        setLoading(false);
+        return;
       }
-      setLoading(false);
-    });
 
-    return () => unsubscribe(); // ✅ Cleanup Firestore listener on unmount
+      const userId = auth.currentUser.uid;
+      console.log("🔍 Fetching ingredients for user:", userId);
+
+      const ingredientsRef = collection(db, "users", userId, "ingredients");
+      const q = query(ingredientsRef, orderBy("name"));
+
+      // ✅ Real-time Firestore listener
+      const unsubscribe = onSnapshot(
+        q,
+        (snapshot) => {
+          console.log("📥 Firestore Data Updated:", snapshot.docs.map((doc) => doc.data()));
+
+          if (!snapshot.empty) {
+            const data = snapshot.docs.map((doc) => ({
+              id: doc.id,
+              ...doc.data(),
+            }));
+            setIngredients(data);
+            setFilteredIngredients(data);
+          } else {
+            console.log("📭 No ingredients found.");
+            setIngredients([]);
+            setFilteredIngredients([]);
+          }
+          setLoading(false);
+        },
+        (error) => {
+          console.error("🔥 Firestore error:", error);
+          setLoading(false);
+        }
+      );
+
+      return () => unsubscribe();
+    };
+
+    fetchIngredients();
   }, []);
 
   // ✅ Search function
@@ -100,8 +110,9 @@ const YourFridge = () => {
         text: "Delete",
         onPress: async () => {
           try {
+            const userId = auth.currentUser.uid;
             const deletePromises = [...selectedItems].map(async (id) => {
-              await deleteDoc(doc(db, "ingredients", id));
+              await deleteDoc(doc(db, "users", userId, "ingredients", id));
             });
 
             await Promise.all(deletePromises);
@@ -147,10 +158,7 @@ const YourFridge = () => {
       {/* 🗑️ Delete Button */}
       <TouchableOpacity
         style={[styles.deleteButton, selectedItems.size === 0 && styles.disabledButton]}
-        onPress={() => {
-          console.log("🗑️ Delete button pressed!");
-          handleDelete();
-        }}
+        onPress={handleDelete}
         disabled={selectedItems.size === 0}
       >
         <MaterialIcons name="delete" size={24} color="#fff" />
@@ -183,7 +191,7 @@ const YourFridge = () => {
   );
 };
 
-// ✅ Styles
+// ✅ Styles (Same as before)
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -225,43 +233,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
     marginLeft: 5,
-  },
-  card: {
-    flex: 1,
-    margin: 5,
-    padding: 15,
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  listItem: {
-    padding: 15,
-    backgroundColor: "#fff",
-    marginBottom: 5,
-    borderRadius: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  ingredientText: {
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  selectedItem: {
-    backgroundColor: "#d3f9d8",
-  },
-  noResults: {
-    textAlign: "center",
-    marginTop: 20,
-    fontSize: 16,
-    color: "#888",
   },
 });
 
