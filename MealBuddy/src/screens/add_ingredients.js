@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, TextInput, Button, FlatList, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { db, auth } from '../services/firebase_config';
 import { collection, addDoc } from 'firebase/firestore';
-import cleanedNutrition from '../data/cleaned_nutrition.json'; // Assuming JSON version of cleaned_nutrition.csv
+import cleanedNutrition from '../../data/cleaned_nutrition.json'; // Assuming JSON version of cleaned_nutrition.csv
 import { useNavigation } from '@react-navigation/native';
 
 const AddIngredients = () => {
@@ -29,15 +29,17 @@ const AddIngredients = () => {
         return;
       }
       
-      await addDoc(collection(db, 'users', auth.currentUser.uid, 'ingredients'), {
+      const ingredientData = {
         name: ingredient.name,
-        serving_size: `${ingredient.serving_size}g`,
-        calories: ingredient.calories,
-        protein: ingredient.protein,
-        total_fat: ingredient.total_fat,
-        water: ingredient.water,
-        carbs: ingredient.carbohydrates,
-      });
+        serving_size: ingredient.serving_size ? `${ingredient.serving_size}g` : '0g',
+        calories: ingredient.calories ?? 0,
+        protein: ingredient.protein ?? 0,
+        total_fat: ingredient.total_fat ?? 0,
+        water: ingredient.water ?? 0,
+        carbs: ingredient.carbohydrates ?? 0,
+      };
+      
+      await addDoc(collection(db, 'users', auth.currentUser.uid, 'ingredients'), ingredientData);
       
       Alert.alert('Success', `${ingredient.name} added to your fridge!`);
       setSearchQuery('');
