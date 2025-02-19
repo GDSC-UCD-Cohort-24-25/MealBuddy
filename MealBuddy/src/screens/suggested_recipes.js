@@ -15,7 +15,10 @@ const SuggestedRecipes = () => {
         'https://api.openai.com/v1/chat/completions',
         {
           model: 'gpt-3.5-turbo',
-          messages: [{ role: 'user', content: `Suggest recipes with: ${ingredients}` }],
+          messages: [{ 
+            role: 'user', 
+            content: `Suggest recipes with these ingredients (quantities in grams): ${ingredients}. Please provide ingredient quantities in grams in the recipes.` 
+          }],
         },
         {
           headers: { Authorization: `Bearer ${OPENAI_API_KEY}` },

@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { View, TextInput, Button, FlatList, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { db, auth } from '../services/firebase_config';
 import { collection, addDoc } from 'firebase/firestore';
-import cleanedNutrition from '../../data/cleaned_nutrition.json'; // Assuming JSON version of cleaned_nutrition.csv
+import cleanedNutrition from '../../data/cleaned_nutrition.json';
 import { useNavigation } from '@react-navigation/native';
 
 const AddIngredients = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredIngredients, setFilteredIngredients] = useState([]);
-  const [selectedIngredient, setSelectedIngredient] = useState(null);
+  const [gramInput, setGramInput] = useState('100'); // Default to 100g
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -28,21 +28,38 @@ const AddIngredients = () => {
         Alert.alert('Error', 'You need to be logged in to add ingredients.');
         return;
       }
-      
+      if (!searchQuery.trim()) {
+        Alert.alert('Error', 'Ingredient name cannot be empty.');
+        return;
+      }
+      if (!gramInput.trim()) {
+        Alert.alert('Error', 'Please specify quantity in grams.');
+        return;
+      }
+
+      const grams = parseFloat(gramInput);
+      if (isNaN(grams) || grams <= 0) {
+        Alert.alert('Error', 'Please enter a valid gram amount.');
+        return;
+      }
+
+      const scaleFactor = grams / 100; // Scaling based on 100g serving size
+
       const ingredientData = {
         name: ingredient.name,
-        serving_size: ingredient.serving_size ? `${ingredient.serving_size}g` : '0g',
-        calories: ingredient.calories ?? 0,
-        protein: ingredient.protein ?? 0,
-        total_fat: ingredient.total_fat ?? 0,
-        water: ingredient.water ?? 0,
-        carbs: ingredient.carbohydrates ?? 0,
+        serving_size: `${grams}g`,
+        calories: Math.round(ingredient.calories * scaleFactor),
+        protein: Math.round(ingredient.protein * scaleFactor * 10) / 10,
+        total_fat: Math.round(ingredient.total_fat * scaleFactor * 10) / 10,
+        water: Math.round(ingredient.water * scaleFactor * 10) / 10,
+        carbs: Math.round(ingredient.carbohydrates * scaleFactor * 10) / 10,
       };
-      
+
       await addDoc(collection(db, 'users', auth.currentUser.uid, 'ingredients'), ingredientData);
-      
+
       Alert.alert('Success', `${ingredient.name} added to your fridge!`);
       setSearchQuery('');
+      setGramInput('100'); // Reset input
       navigation.navigate('Your Fridge');
     } catch (error) {
       console.error('Error adding ingredient:', error);
@@ -58,12 +75,19 @@ const AddIngredients = () => {
         onChangeText={setSearchQuery}
         style={styles.input}
       />
+      <TextInput
+        placeholder="Enter grams (g)"
+        value={gramInput}
+        onChangeText={setGramInput}
+        keyboardType="numeric"
+        style={styles.input}
+      />
       <FlatList
         data={filteredIngredients}
         keyExtractor={(item) => item.name}
         renderItem={({ item }) => (
           <TouchableOpacity style={styles.item} onPress={() => handleAddIngredient(item)}>
-            <Text>{item.name} - {item.serving_size}g</Text>
+            <Text>{item.name} - 100g (default)</Text>
           </TouchableOpacity>
         )}
       />
