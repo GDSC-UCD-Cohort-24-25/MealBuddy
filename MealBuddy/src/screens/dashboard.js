@@ -7,7 +7,7 @@ import { db, auth } from '../services/firebase_config';
 import { collection, query, onSnapshot } from 'firebase/firestore';
 
 const Dashboard = () => {
-  const [totals, setTotals] = useState({ calories: 0, protein: 0, carbs: 0, fats: 0, water: 0 });
+  const [totals, setTotals] = useState({ calories: 0, protein: 0, sugar: 0, fats: 0, water: 0 });
 
   useEffect(() => {
     if (!auth.currentUser) return;
@@ -15,12 +15,12 @@ const Dashboard = () => {
     const ingredientsRef = collection(db, 'users', userId, 'ingredients');
 
     const unsubscribe = onSnapshot(ingredientsRef, (snapshot) => {
-      let newTotals = { calories: 0, protein: 0, carbs: 0, fats: 0, water: 0 };
+      let newTotals = { calories: 0, protein: 0, sugar: 0, fats: 0, water: 0 };
       snapshot.forEach((doc) => {
         const data = doc.data();
         newTotals.calories += data.calories;
         newTotals.protein += data.protein;
-        newTotals.carbs += data.carbs;
+        newTotals.sugar += data.sugar;
         newTotals.fats += data.total_fat;
         newTotals.water += data.water;
       });
@@ -39,7 +39,7 @@ const Dashboard = () => {
       </View>
       <View style={styles.smallTrackerRow}>
         <CircularTracker label="Protein" value={totals.protein} maxValue={100} color={Colors.protein} size={100} />
-        <CircularTracker label="Carbs" value={totals.carbs} maxValue={250} color={Colors.carbs} size={100} />
+        <CircularTracker label="Sugar" value={totals.sugar} maxValue={250} color={Colors.carbs} size={100} />
         <CircularTracker label="Fats" value={totals.fats} maxValue={70} color={Colors.fats} size={100} />
       </View>
     </View>
