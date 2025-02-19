@@ -9,7 +9,7 @@ const AddIngredients = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredIngredients, setFilteredIngredients] = useState([]);
   const [selectedIngredient, setSelectedIngredient] = useState(null);
-  const [gramInput, setGramInput] = useState('100');
+  const [gramInput, setGramInput] = useState('0');
   const [quantityInput, setQuantityInput] = useState('1');
   const [modalVisible, setModalVisible] = useState(false);
   const navigation = useNavigation();
@@ -63,7 +63,7 @@ const AddIngredients = () => {
         protein: Math.round(selectedIngredient.protein * scaleFactor * 10) / 10,
         total_fat: Math.round(selectedIngredient.total_fat * scaleFactor * 10) / 10,
         water: Math.round(selectedIngredient.water * scaleFactor * 10) / 10,
-        carbs: Math.round(selectedIngredient.carbohydrates * scaleFactor * 10) / 10,
+        sugar: Math.round(selectedIngredient.sugar * scaleFactor * 10) / 10, 
       };
 
       await addDoc(collection(db, 'users', auth.currentUser.uid, 'ingredients'), ingredientData);
@@ -71,7 +71,7 @@ const AddIngredients = () => {
       Alert.alert('Success', `${selectedIngredient.name} added to your fridge!`);
       setModalVisible(false);
       setSearchQuery('');
-      setGramInput('100');
+      setGramInput('0');
       setQuantityInput('1');
       navigation.navigate('Your Fridge');
     } catch (error) {
@@ -105,7 +105,7 @@ const AddIngredients = () => {
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Text>Enter the grams per item:</Text>
+            <Text style={styles.modalText}>Enter the grams per item:</Text>
             <TextInput
               placeholder="Grams per item"
               value={gramInput}
@@ -113,7 +113,7 @@ const AddIngredients = () => {
               keyboardType="numeric"
               style={styles.input}
             />
-            <Text>Enter the quantity:</Text>
+            <Text style={styles.modalText}>Enter the quantity:</Text>
             <TextInput
               placeholder="Quantity"
               value={quantityInput}
@@ -138,6 +138,7 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderWidth: 1,
     borderRadius: 5,
+    width: '80%',
   },
   item: {
     padding: 10,
@@ -156,6 +157,11 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
     width: '80%',
+  },
+  modalText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 10,
   },
 });
 

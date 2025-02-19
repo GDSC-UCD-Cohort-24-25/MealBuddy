@@ -79,7 +79,7 @@ const YourFridge = () => {
               <Text style={styles.nutritionText}>Protein: {item.protein}g</Text>
               <Text style={styles.nutritionText}>Fat: {item.total_fat}g</Text>
               <Text style={styles.nutritionText}>Water: {item.water}ml</Text>
-              <Text style={styles.nutritionText}>Carbs: {item.carbs}g</Text>
+              <Text style={styles.nutritionText}>Sugar: {item.sugar}g</Text>
               <TouchableOpacity onPress={() => handleDelete(item.id)}>
                 <MaterialIcons name="delete" size={24} color="red" />
               </TouchableOpacity>
