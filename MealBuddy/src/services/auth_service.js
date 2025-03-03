@@ -8,14 +8,14 @@ export const signUp = async (email, password) => {
       throw new Error('Please enter a valid email address.');
     }
     if (password.length < 6) {
-      throw new Error('Password must be at least 6 characters long.');
+      return Promise.reject(new Error('Password must be at least 6 characters long.'));
     }
-
+    
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     console.log('User signed up successfully:', userCredential.user);
     return userCredential.user;
   } catch (error) {
-    console.error('Error signing up:', error.message);
+    console.error('Sign Up Failed', error.message);
     throw error;
   }
 };
