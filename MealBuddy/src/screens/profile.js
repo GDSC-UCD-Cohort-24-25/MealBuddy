@@ -3,6 +3,21 @@ import { View, Text, ActivityIndicator } from "react-native";
 import { db, auth } from "../services/firebase_config";
 import { doc, getDoc } from "firebase/firestore";
 import styles from '../styles/profile_styles'; // Import Styles
+import { signOut } from 'firebase/auth';
+import { TouchableOpacity } from 'react-native';
+
+const handleSignOut = async () => {
+  try {
+    await signOut(auth);
+    navigation.navigate('Login');
+  } catch (error) {
+    Alert.alert('Error', error.message);
+  }
+};
+
+<TouchableOpacity onPress={handleSignOut} style={styles.signOutButton}>
+  <Text style={styles.signOutText}>Sign Out</Text>
+</TouchableOpacity>
 
 const Profile = () => {
   const [user, setUser] = useState(null);
@@ -43,5 +58,8 @@ const Profile = () => {
     </View>
   );
 };
+
+
+
 
 export default Profile;

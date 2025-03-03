@@ -53,17 +53,17 @@ const AddIngredients = () => {
       }
 
       const scaleFactor = (grams / 100) * quantity;
-
+      const roundToOneDecimal = (value) => Math.round(value * 10) / 10;
       const ingredientData = {
         name: selectedIngredient.name,
         serving_size: `${grams}g per item`,
         quantity: quantity,
         total_weight: `${grams * quantity}g`,
-        calories: Math.round(selectedIngredient.calories * scaleFactor),
-        protein: Math.round(selectedIngredient.protein * scaleFactor * 10) / 10,
-        total_fat: Math.round(selectedIngredient.total_fat * scaleFactor * 10) / 10,
-        water: Math.round(selectedIngredient.water * scaleFactor * 10) / 10,
-        sugar: Math.round(selectedIngredient.sugar * scaleFactor * 10) / 10, 
+        calories: roundToOneDecimal(selectedIngredient.calories * scaleFactor),
+        protein: roundToOneDecimal(selectedIngredient.protein * scaleFactor),
+        total_fat: roundToOneDecimal(selectedIngredient.total_fat * scaleFactor),
+        water: roundToOneDecimal(selectedIngredient.water * scaleFactor),
+        sugar: roundToOneDecimal(selectedIngredient.sugar * scaleFactor),
       };
 
       await addDoc(collection(db, 'users', auth.currentUser.uid, 'ingredients'), ingredientData);

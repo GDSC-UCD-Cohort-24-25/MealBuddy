@@ -34,6 +34,21 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontStyle: 'italic',
   },
+  signOutButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    padding: 10,
+    backgroundColor: 'red',
+    borderRadius: 5,
+  },
+  signOutText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  
 });
+
+
 
 export default styles;
