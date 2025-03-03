@@ -20,14 +20,6 @@
       "newArchEnabled": true
     },
     "web": {
-    },
-    "extra": {
-      "FIREBASE_API_KEY": "AIzaSyByAD5HuSV8qTp5XE7b8YsIiQHVLlOwSXk",
-      "FIREBASE_AUTH_DOMAIN": "mealbuddy-f86f7.firebaseapp.com",
-      "FIREBASE_PROJECT_ID": "mealbuddy-f86f7",
-      "FIREBASE_STORAGE_BUCKET": "mealbuddy-f86f7.firebasestorage.app",
-      "FIREBASE_MESSAGING_SENDER_ID": "1011951424554",
-      "FIREBASE_APP_ID": "1:1011951424554:web:b4be89b9f5fd4137c69f53"
     }
   }
 }
