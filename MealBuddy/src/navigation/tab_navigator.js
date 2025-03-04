@@ -12,7 +12,7 @@ import { doc, setDoc, getDoc, writeBatch } from 'firebase/firestore';
 import Dashboard from '../screens/dashboard';
 import YourFridge from '../screens/your_fridge';
 import AddIngredients from '../screens/add_ingredients';
-import SuggestedRecipes from '../screens/suggested_recipes';
+import Chatbot from '../screens/chat_bot';
 import Profile from '../screens/profile';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '../constants/Colors';
@@ -502,7 +502,7 @@ const MainTabs = () => (
         if (route.name === 'Dashboard') iconName = 'home-outline';
         else if (route.name === 'Your Fridge') iconName = 'basket-outline';
         else if (route.name === 'Add') iconName = 'add-circle-outline';
-        else if (route.name === 'Chatbot') iconName = 'robot-outline';
+        else if (route.name === 'Chatbot') iconName = 'chatbubble-ellipses-outline';
         else if (route.name === 'Profile') iconName = 'person-outline';
 
         return <Ionicons name={iconName} size={size} color={color} />;
@@ -514,7 +514,7 @@ const MainTabs = () => (
     <Tab.Screen name="Dashboard" component={Dashboard} />
     <Tab.Screen name="Your Fridge" component={YourFridge} />
     <Tab.Screen name="Add" component={AddIngredients} />
-    <Tab.Screen name="Chatbot" component={SuggestedRecipes} />
+    <Tab.Screen name="Chatbot" component={Chatbot} />
     <Tab.Screen name="Profile" component={Profile} />
   </Tab.Navigator>
 );

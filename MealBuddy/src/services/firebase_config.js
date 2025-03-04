@@ -2,6 +2,7 @@ import { initializeApp, getApps } from 'firebase/app';
 import { getAuth, initializeAuth, getReactNativePersistence } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
+import { LogBox } from 'react-native';
 
 // Firebase configuration
 const firebaseConfig = {
@@ -35,18 +36,35 @@ console.log('Firebase Initialized:', app);
 console.log('Active Apps:', getApps());
 console.log('Firestore Initialized:', db);
 
-// Suppress Firebase Auth errors from logging in the console
+// Enhanced error suppression: Combine all arguments into one string and check for specific error messages.
 const originalConsoleError = console.error;
 console.error = (...args) => {
+  const combinedMessage = args
+    .map(arg => (typeof arg === 'object' ? JSON.stringify(arg) : String(arg)))
+    .join(' ');
+  // Suppress Firestore permission-denied errors in snapshot listeners
   if (
-    args[0] &&
-    typeof args[0] === 'string' &&
-    (args[0].includes('auth/invalid-credential') ||
-     args[0].includes('auth/user-not-found') ||
-     args[0].includes('auth/wrong-password'))
+    combinedMessage.includes('Firestore (11.2.0): Uncaught Error in snapshot listener: FirebaseError: [code=permission-denied]')
   ) {
-    return; // Suppress Firebase auth errors
+    return;
   }
-  originalConsoleError(...args); // Log other errors normally
+  // Also suppress common auth errors.
+  if (
+    args.some(arg =>
+      typeof arg === 'string' &&
+      (
+        arg.includes('auth/invalid-credential') ||
+        arg.includes('auth/user-not-found') ||
+        arg.includes('auth/wrong-password')
+      )
+    )
+  ) {
+    return;
+  }
+  originalConsoleError(...args);
 };
 
+// Use LogBox to ignore the specific Firestore permission-denied error log.
+LogBox.ignoreLogs([
+  '@firebase/firestore: Firestore (11.2.0): Uncaught Error in snapshot listener: FirebaseError: [code=permission-denied]: Missing or insufficient permissions.'
+]);
