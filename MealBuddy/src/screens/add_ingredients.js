@@ -53,6 +53,7 @@ const AddIngredients = () => {
       }
 
       const scaleFactor = (grams / 100) * quantity;
+
       const roundToOneDecimal = (value) => Math.round(value * 10) / 10;
       const ingredientData = {
         name: selectedIngredient.name,
@@ -131,14 +132,19 @@ const AddIngredients = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20 },
+  container: { 
+    flex: 1, 
+    padding: 20,
+    backgroundColor: '#f3fefb', // Updated background color
+  },
   input: {
     marginBottom: 10,
     padding: 10,
     borderColor: '#ccc',
+    backgroundColor: "#fff",
     borderWidth: 1,
-    borderRadius: 5,
-    width: '80%',
+    borderRadius: 10,
+    //width: '80%',
   },
   item: {
     padding: 10,
