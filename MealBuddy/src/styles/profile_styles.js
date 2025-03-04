@@ -7,13 +7,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    backgroundColor: Colors.background,
+    backgroundColor: '#f3fefb',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: Colors.background,
+    backgroundColor: '#f3fefb',
   },
   title: {
     fontSize: 26,
@@ -36,17 +36,23 @@ const styles = StyleSheet.create({
   },
   signOutButton: {
     position: 'absolute',
-    top: 10,
-    right: 10,
-    padding: 10,
-    backgroundColor: 'red',
-    borderRadius: 5,
+    top: 20,
+    right: 20,
+    backgroundColor: '#ff5c5c', // A softer red tone
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
   },
   signOutText: {
-    color: 'white',
-    fontWeight: 'bold',
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
-  
 });
 
 

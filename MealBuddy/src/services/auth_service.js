@@ -8,15 +8,19 @@ export const signUp = async (email, password) => {
       throw new Error('Please enter a valid email address.');
     }
     if (password.length < 6) {
-      return Promise.reject(new Error('Password must be at least 6 characters long.'));
+      throw new Error('Password must be at least 6 characters long.');
     }
     
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    console.log('User signed up successfully:', userCredential.user);
+    if (__DEV__) {
+      console.log('User signed up successfully:', userCredential.user);
+    }
     return userCredential.user;
   } catch (error) {
-    console.error('Sign Up Failed', error.message);
-    throw error;
+    if (__DEV__) {
+      console.error('Sign Up Failed:', error.message);
+    }
+    throw new Error(error.message);
   }
 };
 
@@ -24,10 +28,28 @@ export const signUp = async (email, password) => {
 export const signIn = async (email, password) => {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    console.log('User signed in successfully:', userCredential.user);
+    if (__DEV__) {
+      console.log('User signed in successfully:', userCredential.user);
+    }
     return userCredential.user;
   } catch (error) {
-    console.error('Error signing in:', error.message);
-    throw error;
+    let friendlyMessage = error.message;
+    // Customize error message for known error codes
+    if (
+      error.code === 'auth/invalid-credential' ||
+      error.code === 'auth/user-not-found' ||
+      error.code === 'auth/wrong-password'
+    ) {
+      friendlyMessage = 'Incorrect email or password.';
+    }
+    // Optionally, conditionally log errors in development only when not one of the suppressed ones
+    if (__DEV__ && !(
+      error.code === 'auth/invalid-credential' ||
+      error.code === 'auth/user-not-found' ||
+      error.code === 'auth/wrong-password'
+    )) {
+      console.error('Error signing in:', error.message);
+    }
+    throw new Error(friendlyMessage);
   }
 };
