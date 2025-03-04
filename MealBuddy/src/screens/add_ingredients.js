@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderWidth: 1,
     borderRadius: 5,
-    width: '80%',
+    width: '100%',
   },
   item: {
     padding: 10,
