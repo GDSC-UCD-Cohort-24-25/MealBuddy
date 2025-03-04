@@ -34,3 +34,19 @@ export { app, auth, db };
 console.log('Firebase Initialized:', app);
 console.log('Active Apps:', getApps());
 console.log('Firestore Initialized:', db);
+
+// Suppress Firebase Auth errors from logging in the console
+const originalConsoleError = console.error;
+console.error = (...args) => {
+  if (
+    args[0] &&
+    typeof args[0] === 'string' &&
+    (args[0].includes('auth/invalid-credential') ||
+     args[0].includes('auth/user-not-found') ||
+     args[0].includes('auth/wrong-password'))
+  ) {
+    return; // Suppress Firebase auth errors
+  }
+  originalConsoleError(...args); // Log other errors normally
+};
+
