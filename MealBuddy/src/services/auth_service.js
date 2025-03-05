@@ -1,5 +1,5 @@
 import { auth } from './firebase_config';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 
 // Sign Up Function with Validation
 export const signUp = async (email, password) => {
@@ -51,5 +51,19 @@ export const signIn = async (email, password) => {
       console.error('Error signing in:', error.message);
     }
     throw new Error(friendlyMessage);
+  }
+};
+
+// Forgot Password Function
+export const forgotPassword = async (email) => {
+  try {
+    if (!email || !email.includes('@')) {
+      throw new Error('Please enter a valid email address.');
+    }
+    await sendPasswordResetEmail(auth, email);
+    return 'A password reset email has been sent.';
+  } catch (error) {
+    console.error('Forgot Password Error:', error.message);
+    throw new Error(error.message);
   }
 };

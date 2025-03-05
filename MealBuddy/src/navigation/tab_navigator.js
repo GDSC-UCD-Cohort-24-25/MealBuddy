@@ -18,6 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Colors from '../constants/Colors';
 import { Picker } from '@react-native-picker/picker'; 
 import { Menu, MenuTrigger, MenuOptions, MenuOption } from 'react-native-paper';
+import { forgotPassword } from '../services/auth_service';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -91,6 +92,19 @@ const AuthScreen = ({ navigation }) => {
     setLoading(true);
     setMode('profile');
     setLoading(false);
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email.trim()) {
+      Alert.alert('Input Required', 'Please enter your email address first.');
+      return;
+    }
+    try {
+      const message = await forgotPassword(email);
+      Alert.alert('Success', message);
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    }
   };
   
   const handleSubmitProfile = async () => {
@@ -457,7 +471,7 @@ const AuthScreen = ({ navigation }) => {
 
 
                      {/* Forgot Password Link */}
-                    <TouchableOpacity onPress={() => Alert.alert('Forgot Password', 'Password reset instructions will be sent.')}>
+                    <TouchableOpacity onPress={async () => {await handleForgotPassword()}}>
                       <Text style={{ color: Colors.primary, textAlign: 'left', marginBottom: 10 }}>
                         Forgot Password?
                       </Text>
