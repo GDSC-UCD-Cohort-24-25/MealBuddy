@@ -9,10 +9,8 @@ import { useNavigation } from "@react-navigation/native";
 const Profile = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  // Flag to indicate if sign-out is in progress
   const [isSigningOut, setIsSigningOut] = useState(false);
   const navigation = useNavigation();
-  // useRef to store the unsubscribe function for the snapshot listener
   const unsubscribeRef = useRef(null);
 
   useEffect(() => {
@@ -28,7 +26,6 @@ const Profile = () => {
           setLoading(false);
         },
         (error) => {
-          // If there's no authenticated user or we're signing out, do nothing.
           if (!auth.currentUser || isSigningOut) return;
           console.error("Snapshot listener error:", error.message);
           setLoading(false);
@@ -54,7 +51,6 @@ const Profile = () => {
         {
           text: "Yes",
           onPress: async () => {
-            // Unsubscribe immediately to prevent further snapshot calls.
             if (unsubscribeRef.current) {
               unsubscribeRef.current();
               unsubscribeRef.current = null;
@@ -62,7 +58,6 @@ const Profile = () => {
             setIsSigningOut(true);
             try {
               await signOut(auth);
-              // Reset navigation to clear history and return to the authentication screen.
               navigation.reset({
                 index: 0,
                 routes: [{ name: "AuthScreen" }],
@@ -76,6 +71,14 @@ const Profile = () => {
     );
   };
 
+  // Calculate BMI
+  const calculateBMI = () => {
+    if (user?.height && user?.weight) {
+      return (user.weight / (user.height * user.height)).toFixed(1);
+    }
+    return "N/A";
+  };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -86,7 +89,7 @@ const Profile = () => {
 
   return (
     <View style={styles.container}>
-      {/* Sign Out Button at the top-right */}
+      {/* Sign Out Button */}
       <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
         <Text style={styles.signOutText}>Sign Out</Text>
       </TouchableOpacity>
@@ -94,10 +97,13 @@ const Profile = () => {
       {user ? (
         <>
           <Text style={styles.title}>Welcome, {user.name}!</Text>
-          <Text style={styles.subtitle}>Age: {user.age}</Text>
-          <Text style={styles.subtitle}>Gender: {user.gender}</Text>
-          <Text style={styles.subtitle}>Height: {user.height}</Text>
-          <Text style={styles.subtitle}>Weight: {user.weight} pounds</Text>
+          <View style={styles.profileInfoContainer}>
+            <Text style={styles.subtitle}>Age: <Text style={styles.value}>{user.age}</Text></Text>
+            <Text style={styles.subtitle}>Gender: <Text style={styles.value}>{user.gender}</Text></Text>
+            <Text style={styles.subtitle}>Height: <Text style={styles.value}>{user.height} m</Text></Text>
+            <Text style={styles.subtitle}>Weight: <Text style={styles.value}>{user.weight} kg</Text></Text>
+            <Text style={styles.subtitle}>BMI: <Text style={styles.value}>{calculateBMI()}</Text></Text>
+          </View>
         </>
       ) : (
         <Text style={styles.noDataText}>No profile data found.</Text>
