@@ -19,7 +19,6 @@ import Colors from '../constants/Colors';
 import { Picker } from '@react-native-picker/picker'; 
 import { Menu, MenuTrigger, MenuOptions, MenuOption } from 'react-native-paper';
 import { forgotPassword } from '../services/auth_service';
-import { useGoogleSignIn } from '../services/google_sign_in';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -187,15 +186,7 @@ const AuthScreen = ({ navigation }) => {
     }
   };
   
-  const onGoogleSignInPress = async () => {
-    try {
-      const user = await handleGoogleSignIn();
-      Alert.alert('Success', `Welcome ${user.displayName}!`);
-      navigation.replace('MainTabs');
-    } catch (error) {
-      Alert.alert('Error', error.message);
-    }
-  };
+
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -225,14 +216,7 @@ const AuthScreen = ({ navigation }) => {
                     <TouchableOpacity onPress={() => { setMode('login'); resetInputs(); }} style={styles.authButtonSecondary}>
                       <Text style={styles.authButtonText}>Log In</Text>
                     </TouchableOpacity>
-                    
-                    {/* Google Sign-In Button */}
-                    <TouchableOpacity 
-                      onPress={onGoogleSignInPress} 
-                      style={styles.googleButton}
-                    >
-                      <Text style={styles.authButtonText}>Sign In with Google</Text>
-                    </TouchableOpacity>
+                  
                     
                   </>
                 )}
@@ -521,16 +505,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 
-  googleButton: {
-    backgroundColor: '#4285F4',
-    paddingVertical: 15,
-    paddingHorizontal: 10,
-    borderRadius: 10,
-    alignItems: 'center',
-    marginBottom: 20,
-    width: '55%',
-    left: 90,
-  },
   input: {
     backgroundColor: '#fff',
     borderRadius: 10,
