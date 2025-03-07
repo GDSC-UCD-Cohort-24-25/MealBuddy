@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -10,8 +10,11 @@ import {
   Platform
 } from 'react-native';
 import styles from '../styles/chatbot_styles';
-import { GoogleGenerativeAI } from "@google/generative-ai"; // ✅ Official Gemini SDK
-import { GOOGLE_GEMINI_API_KEY } from '@env';
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GOOGLE_GEMINI_API_KEY, YOUTUBE_API_KEY } from '@env';
+import { db, auth } from '../services/firebase_config';
+import { collection, getDocs } from 'firebase/firestore';
+import axios from 'axios';
 
 const Chatbot = () => {
   const [input, setInput] = useState('');
@@ -23,8 +26,39 @@ const Chatbot = () => {
     }
   ]);
   const [loading, setLoading] = useState(false);
+  const [fridgeItems, setFridgeItems] = useState([]);
 
-  // ✅ Initialize Gemini AI Client
+  useEffect(() => {
+    fetchFridgeItems();
+  }, []);
+
+  const fetchFridgeItems = async () => {
+    if (!auth.currentUser) return;
+    const userId = auth.currentUser.uid;
+    const ingredientsRef = collection(db, 'users', userId, 'ingredients');
+    const snapshot = await getDocs(ingredientsRef);
+    const items = snapshot.docs.map(doc => doc.data().name);
+    setFridgeItems(items);
+  };
+
+  const fetchYouTubeVideo = async (recipeName) => {
+    try {
+      const response = await axios.get(`https://www.googleapis.com/youtube/v3/search`, {
+        params: {
+          part: 'snippet',
+          q: `${recipeName} recipe`,
+          maxResults: 1,
+          key: YOUTUBE_API_KEY,
+        },
+      });
+      const videoId = response.data.items[0]?.id?.videoId;
+      return videoId ? `🔗 Watch: https://www.youtube.com/watch?v=${videoId}` : "(No video found)";
+    } catch (error) {
+      console.error("YouTube API error:", error);
+      return "(No video found)";
+    }
+  };
+
   const genAI = new GoogleGenerativeAI(GOOGLE_GEMINI_API_KEY);
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
@@ -42,7 +76,8 @@ const Chatbot = () => {
     setLoading(true);
 
     try {
-      // ✅ Start a chat session correctly
+      let responseText = '';
+
       const chatSession = model.startChat({
         generationConfig: {
           temperature: 1,
@@ -53,31 +88,33 @@ const Chatbot = () => {
         history: [],
       });
 
-      // ✅ Correct JSON Structure
-      const result = await chatSession.sendMessage([
-        { text: "You are a helpful AI assistant specialized in cooking. Your job is to suggest recipes based on ingredients provided by the user. Always include ingredient quantities in grams where possible and format recipes with clear step-by-step instructions and cooking times." },
-        { text: `Suggest recipes with these ingredients (quantities in grams): ${input}. Please provide ingredient quantities in grams in the recipes.` }
-      ]);
+      const result = await chatSession.sendMessage([{ text: input }]);
+      responseText = result.response.text() || "No response from Gemini.";
 
-      const botResponse = result.response.text() || "⚠️ No response from Gemini";
+      if (input.toLowerCase().includes("what meals can i make")) {
+        if (fridgeItems.length === 0) {
+          responseText = "Your fridge is empty! Add some ingredients to get meal suggestions.";
+        } else {
+          responseText = `I see you have: ${fridgeItems.join(', ')}. Let me find some recipes for you...`;
+          
+          const result = await chatSession.sendMessage([
+            { text: `Suggest 3 meal recipes using: ${fridgeItems.join(", ")}` }
+          ]);
+          
+          const recipeText = result.response.text() || "No recipes found.";
+          
+          const recipeNames = recipeText.match(/(?:\*\*)([^*]+)(?:\*\*)/g) || [];
+          
+          const videoLinks = await Promise.all(recipeNames.map(recipe => fetchYouTubeVideo(recipe.replace(/\*\*/g, ''))));
+          
+          responseText += `\n\n${recipeText}\n\n` + videoLinks.join('\n');
+        }
+      }
 
-      const botMessage = {
-        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-        text: botResponse,
-        isUser: false,
-      };
-
-      setMessages((prevMessages) => [...prevMessages, botMessage]);
+      setMessages((prevMessages) => [...prevMessages, { id: Date.now().toString(), text: responseText, isUser: false }]);
     } catch (error) {
-      console.error('🚨 Chatbot error:', error.message);
-
-      const errorMessage = {
-        id: Date.now().toString() + '-error',
-        text: "Oops! Something went wrong.",
-        isUser: false,
-      };
-
-      setMessages((prevMessages) => [...prevMessages, errorMessage]);
+      console.error("Chatbot error:", error.message);
+      setMessages((prevMessages) => [...prevMessages, { id: Date.now().toString(), text: "Oops! Something went wrong.", isUser: false }]);
     } finally {
       setLoading(false);
     }
@@ -95,24 +132,22 @@ const Chatbot = () => {
     <KeyboardAvoidingView 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
       style={styles.container}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 50} // ✅ FIX HEIGHT FOR KEYBOARD
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 50} 
     >
-      {/* ✅ Remove ScrollView, Only Use FlatList */}
       <FlatList
         data={messages}
         renderItem={renderMessage}
-        keyExtractor={(item) => item.id} // Ensures unique keys
+        keyExtractor={(item) => item.id} 
         style={styles.messageList}
         contentContainerStyle={styles.messageListContent}
-        keyboardShouldPersistTaps="handled" // ✅ FIXES TEXTINPUT MEASUREMENT ERROR
+        keyboardShouldPersistTaps="handled" 
       />
 
       {loading && <ActivityIndicator size="large" color="#007bff" />}
 
-      {/* ✅ Fixed Input Field */}
       <View style={styles.inputContainer}>
         <TextInput
-          placeholder="Enter ingredients to get recipes..."
+          placeholder="Ask me anything about cooking..."
           value={input}
           onChangeText={setInput}
           style={styles.input}
