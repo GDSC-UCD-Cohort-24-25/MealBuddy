@@ -40,8 +40,6 @@ const AuthScreen = ({ navigation }) => {
 
   const [passwordVisible, setPasswordVisible] = useState(false);
 
-  // Use the custom Google sign-in hook
-  const { signIn: handleGoogleSignIn, loading: googleLoading } = useGoogleSignIn();
 
   useEffect(() => {
     const fetchUserProfile = async () => {
