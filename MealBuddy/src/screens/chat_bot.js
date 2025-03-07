@@ -19,11 +19,11 @@ import axios from 'axios';
 
 const Chatbot = () => {
   const [input, setInput] = useState('');
-  const [messages, setMessages] = useState([]); // start empty; initial greeting after delay.
+  const [messages, setMessages] = useState([]); // start empty; initial greeting will be shown after a delay.
   const [loading, setLoading] = useState(false);
   const [fridgeItems, setFridgeItems] = useState([]);
 
-  // Typewriter effect: reveal text character-by-character.
+  // Typewriter effect: gradually reveal text in the last message.
   const typeMessage = (fullText, delay = 15) => {
     let currentIndex = 0;
     let typedText = "";
@@ -41,7 +41,7 @@ const Chatbot = () => {
     }, delay);
   };
 
-  // Helper to render highlighted text (text wrapped in ** … **)
+  // Helper to render highlighted text (text wrapped in ** ... **)
   const renderHighlightedText = (text) => {
     const highlightRegex = /\*\*(.*?)\*\*/g;
     let elements = [];
@@ -64,7 +64,7 @@ const Chatbot = () => {
     return elements;
   };
 
-  // Show initial greeting after a loading period.
+  // Show initial greeting after a loading period
   useEffect(() => {
     setLoading(true);
     const timer = setTimeout(() => {
@@ -77,7 +77,7 @@ const Chatbot = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Live Firestore Listener for Fridge Items.
+  // Live Firestore Listener for Fridge Items
   useEffect(() => {
     if (!auth.currentUser) {
       console.error("❌ No authenticated user found.");
@@ -90,7 +90,7 @@ const Chatbot = () => {
         console.warn("⚠️ No ingredients found in Firestore.");
         setFridgeItems([]);
       } else {
-        // Get only the ingredient names.
+        // Only get the name of each ingredient.
         const items = snapshot.docs.map(doc => doc.data().name || "Unknown Ingredient");
         console.log("🔹 Updated fridge items:", items);
         setFridgeItems(items);
@@ -99,7 +99,7 @@ const Chatbot = () => {
     return () => unsubscribe();
   }, []);
 
-  // Fetch one YouTube video for a query (overall recipe video).
+  // Fetch one YouTube video for a recipe (overall recipe video)
   const fetchYouTubeVideo = async (query) => {
     try {
       const response = await axios.get(`https://www.googleapis.com/youtube/v3/search`, {
@@ -118,7 +118,7 @@ const Chatbot = () => {
     }
   };
 
-  // Initialize Gemini AI.
+  // Initialize Gemini AI
   const genAI = new GoogleGenerativeAI(GOOGLE_GEMINI_API_KEY);
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
@@ -144,8 +144,13 @@ const Chatbot = () => {
           const ingredientList = fridgeItems.map(item => `• **${item}**`).join("\n");
           responseText = `I see you have:\n${ingredientList}\n\nHere are some meal ideas:`;
 
-          // AI prompt with instructions to separate each recipe.
-          const prompt = `I have these ingredients: ${ingredientList}. Please suggest 3 creative and diverse meal recipes using only these ingredients. For each recipe, start with "Recipe X:" (where X is the recipe number), then provide a bold title for the recipe, list the required ingredients with specific quantities (in grams), then provide a detailed, step-by-step cooking process with timings (e.g., preheat, cook for X minutes, etc.) and a serving suggestion. Separate each recipe with a line that contains only "---".`;
+          // Open-ended prompt for detailed recipes.
+          const prompt = `I have these ingredients: ${ingredientList}. Please suggest 3 creative and diverse meal recipes using only these ingredients. For each recipe, do the following:
+1. Start with "Recipe X:" (where X is 1, 2, 3).
+2. Provide a bold title for the recipe.
+3. List the required ingredients with specific quantities (in grams).
+4. Provide a detailed, step-by-step cooking process with timings (e.g., preheat, cook for X minutes, etc.) and a serving suggestion.
+Separate each recipe with a line containing only "---".`;
 
           const requestPayload = {
             contents: [
@@ -158,23 +163,25 @@ const Chatbot = () => {
 
           const result = await model.generateContent(requestPayload);
           const recipeText = result.response.text() || "No recipes found.";
-
-          // Split the response into separate recipes using the delimiter.
+          // Split the recipes using the delimiter.
           const recipeSections = recipeText.split('---').map(section => section.trim()).filter(section => section.length > 0);
           let finalRecipesText = "";
+          // Process each recipe individually.
           for (let i = 0; i < recipeSections.length; i++) {
             let section = recipeSections[i];
-            // Extract the first bold text as the recipe title.
+            // Extract the recipe title (first bold text).
             const titleMatch = section.match(/(?:\*\*)([^*]+)(?:\*\*)/);
             let recipeTitle = titleMatch ? titleMatch[1] : `Recipe ${i+1}`;
-            // Fetch the video for this recipe.
+            // Fetch the overall recipe video for this recipe.
             const videoLink = await fetchYouTubeVideo(recipeTitle);
             // Append the video link directly after this recipe.
             section += `\n\n🔗 Watch ${recipeTitle}: ${videoLink ? videoLink : "No video found"}`;
-            // Separate recipes clearly.
+            // Add a separator between recipes.
             finalRecipesText += section + "\n\n";
           }
           responseText += finalRecipesText;
+          // Append the final prompt.
+          responseText += "\nLet me know if you need anything else.";
         }
       } else if (lowerInput.includes("what do i have in the fridge") || lowerInput.includes("my fridge")) {
         if (fridgeItems.length === 0) {
@@ -182,13 +189,14 @@ const Chatbot = () => {
         } else {
           // List ingredients as bullet points with highlights.
           const ingredientList = fridgeItems.map(item => `• **${item}**`).join("\n");
-          responseText = `You currently have:\n${ingredientList}`;
+          responseText = `You currently have:\n${ingredientList}\n\nLet me know if you need anything else.`;
         }
       } else {
         const result = await model.generateContent({
           contents: [{ role: "user", parts: [{ text: input }] }]
         });
         responseText = result.response.text() || "No response from Gemini.";
+        responseText += "\n\nLet me know if you need anything else.";
       }
 
       // Append a blank bot message then use typewriter effect.
