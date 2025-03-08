@@ -21,7 +21,14 @@ const Profile = () => {
         docRef,
         (docSnap) => {
           if (docSnap.exists()) {
-            setUser(docSnap.data());
+            const userData = docSnap.data();
+
+            // Ensure height and weight remain as strings
+            setUser({
+              ...userData,
+              height: userData.height || "N/A",  // Keep as entered (feet)
+              weight: userData.weight || "N/A",  // Keep as entered (pounds)
+            });
           }
           setLoading(false);
         },
@@ -71,14 +78,6 @@ const Profile = () => {
     );
   };
 
-  // Calculate BMI
-  const calculateBMI = () => {
-    if (user?.height && user?.weight) {
-      return (user.weight / (user.height * user.height)).toFixed(1);
-    }
-    return "N/A";
-  };
-
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -100,9 +99,8 @@ const Profile = () => {
           <View style={styles.profileInfoContainer}>
             <Text style={styles.subtitle}>Age: <Text style={styles.value}>{user.age}</Text></Text>
             <Text style={styles.subtitle}>Gender: <Text style={styles.value}>{user.gender}</Text></Text>
-            <Text style={styles.subtitle}>Height: <Text style={styles.value}>{user.height} m</Text></Text>
-            <Text style={styles.subtitle}>Weight: <Text style={styles.value}>{user.weight} kg</Text></Text>
-            <Text style={styles.subtitle}>BMI: <Text style={styles.value}>{calculateBMI()}</Text></Text>
+            <Text style={styles.subtitle}>Height: <Text style={styles.value}>{user.height} ft</Text></Text> 
+            <Text style={styles.subtitle}>Weight: <Text style={styles.value}>{user.weight} lbs</Text></Text> 
           </View>
         </>
       ) : (

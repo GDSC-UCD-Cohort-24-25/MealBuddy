@@ -41,6 +41,7 @@ const AuthScreen = ({ navigation }) => {
   const [passwordVisible, setPasswordVisible] = useState(false);
 
 
+
   useEffect(() => {
     const fetchUserProfile = async () => {
       if (auth.currentUser) {
@@ -185,7 +186,6 @@ const AuthScreen = ({ navigation }) => {
   };
   
 
-
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={{ flex: 1, backgroundColor: '#f3fefb', justifyContent: 'center', padding: 20 }}>
@@ -214,7 +214,7 @@ const AuthScreen = ({ navigation }) => {
                     <TouchableOpacity onPress={() => { setMode('login'); resetInputs(); }} style={styles.authButtonSecondary}>
                       <Text style={styles.authButtonText}>Log In</Text>
                     </TouchableOpacity>
-                  
+                    
                     
                   </>
                 )}
@@ -300,57 +300,116 @@ const AuthScreen = ({ navigation }) => {
                 {mode === 'profile' && (
                   <>
                     {/* Background Information Title */}
-                    <Text style={{ fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 20 }}>
-                      Background Information
-                    </Text>
-
-                    {error ? <Text style={{ color: 'red', marginBottom: 10, textAlign: 'center' }}>{error}</Text> : null}
+                      <Text style={{ fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 20 }}>
+                        Background Information
+                      </Text>
+                    {/* Error Message */}
+                    {error ? (
+                      <Text style={{ color: 'red', marginBottom: 10, textAlign: 'center' }}>
+                        {error}
+                      </Text>
+                    ) : null}
 
                     {/* Name Input */}
                     <TextInput
                       placeholder="Enter Your Name"
                       value={name}
                       onChangeText={setName}
-                      style={styles.input}
+                      style={{
+                        backgroundColor: '#fff',
+                        borderRadius: 10,
+                        padding: 12,
+                        marginBottom: 15,
+                        borderColor: '#ddd',
+                        borderWidth: 1,
+                        fontSize: 16,
+                      }}
                     />
 
-                    {/* Age Picker */}
-                    <Text style={styles.subtitle}>Age</Text>
-                    <Picker selectedValue={age} onValueChange={setAge} style={styles.picker}>
-                      {Array.from({ length: 100 }, (_, i) => i + 1).map((num) => (
-                        <Picker.Item key={num} label={num.toString()} value={num} />
-                      ))}
-                    </Picker>
+                    {/* Age Input */}
+                    <TextInput
+                      placeholder="Enter Your Age"
+                      value={age}
+                      onChangeText={setAge}
+                      keyboardType="numeric"
+                      style={{
+                        backgroundColor: '#fff',
+                        borderRadius: 10,
+                        padding: 12,
+                        marginBottom: 20,
+                        borderColor: '#ddd',
+                        borderWidth: 1,
+                        fontSize: 16,
+                      }}
+                    />
 
-                    {/* Gender Picker */}
-                    <Text style={styles.subtitle}>Gender</Text>
-                    <Picker selectedValue={gender} onValueChange={setGender} style={styles.picker}>
-                      <Picker.Item label="Male" value="Male" />
-                      <Picker.Item label="Female" value="Female" />
-                    </Picker>
+                      {/* Gender Input */}
+                    <TextInput
+                      placeholder="Enter Your Gender"
+                      value={gender}
+                      onChangeText={setGender}
+                      style={{
+                        backgroundColor: '#fff',
+                        borderRadius: 10,
+                        padding: 12,
+                        marginBottom: 15,
+                        borderColor: '#ddd',
+                        borderWidth: 1,
+                        fontSize: 16,
+                      }}
+                    />
 
-                    {/* Height Picker */}
-                    <Text style={styles.subtitle}>Height (m)</Text>
-                    <Picker selectedValue={height} onValueChange={setHeight} style={styles.picker}>
-                      {Array.from({ length: 101 }, (_, i) => (1.50 + i * 0.01).toFixed(2)).map((value) => (
-                        <Picker.Item key={value} label={`${value} m`} value={parseFloat(value)} />
-                      ))}
-                    </Picker>
+                    {/* Height Input */}
+                    <TextInput
+                      placeholder="Enter Your Height (in Feet)"
+                      value={height}
+                      onChangeText={setHeight}
+                      keyboardType="default" 
+                      style={{
+                        backgroundColor: '#fff',
+                        borderRadius: 10,
+                        padding: 12,
+                        marginBottom: 20,
+                        borderColor: '#ddd',
+                        borderWidth: 1,
+                        fontSize: 16,
+                      }}
+                    />
 
-                    {/* Weight Picker */}
-                    <Text style={styles.subtitle}>Weight (kg)</Text>
-                    <Picker selectedValue={weight} onValueChange={setWeight} style={styles.picker}>
-                      {Array.from({ length: 150 }, (_, i) => i + 30).map((num) => (
-                        <Picker.Item key={num} label={`${num} kg`} value={num} />
-                      ))}
-                    </Picker>
+                    {/* Weight Input */}
+                    <TextInput
+                      placeholder="Enter Your Weight (in Pounds)"
+                      value={weight}
+                      onChangeText={setWeight}
+                      keyboardType="numeric"
+                      style={{
+                        backgroundColor: '#fff',
+                        borderRadius: 10,
+                        padding: 12,
+                        marginBottom: 20,
+                        borderColor: '#ddd',
+                        borderWidth: 1,
+                        fontSize: 16,
+                      }}
+                    />
 
                     {/* Submit Button */}
-                    <TouchableOpacity onPress={handleSubmitProfile} disabled={loading} style={styles.submitButton}>
+                    <TouchableOpacity
+                      onPress={handleSubmitProfile}
+                      disabled={loading} // Disable button when loading
+                      style={{
+                        backgroundColor: '#24a0ed', // Transparent background
+                        paddingVertical: 15,
+                        paddingHorizontal: 40,
+                        borderRadius: 10, // Rounded corners (optional)
+                        alignItems: 'center',
+                        marginBottom: 20,
+                      }}
+                    >
                       {loading ? (
                         <ActivityIndicator size="small" color="#fff" />
                       ) : (
-                        <Text style={styles.submitButtonText}>Submit Profile</Text>
+                        <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>Submit Profile</Text>
                       )}
                     </TouchableOpacity>
 
@@ -503,37 +562,15 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 
-  input: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 12,
-    marginBottom: 15,
-    borderColor: '#ddd',
-    borderWidth: 1,
-    fontSize: 16,
-  },
-  subtitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-  picker: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    marginBottom: 15,
-  },
-  submitButton: {
-    backgroundColor: '#24a0ed',
+  googleButton: {
+    backgroundColor: '#4285F4',
     paddingVertical: 15,
-    paddingHorizontal: 40,
+    paddingHorizontal: 10,
     borderRadius: 10,
     alignItems: 'center',
     marginBottom: 20,
-  },
-  submitButtonText: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
+    width: '55%',
+    left: 90,
   },
 
 });
