@@ -112,7 +112,7 @@ const AddIngredients = () => {
               value={gramInput}
               onChangeText={setGramInput}
               keyboardType="numeric"
-              style={styles.input}
+              style={styles.fixedInput}
             />
             <Text style={styles.modalText}>Enter the quantity:</Text>
             <TextInput
@@ -120,7 +120,7 @@ const AddIngredients = () => {
               value={quantityInput}
               onChangeText={setQuantityInput}
               keyboardType="numeric"
-              style={styles.input}
+              style={styles.fixedInput}
             />
             <Button title="Add Ingredient" onPress={handleAddIngredient} />
             <Button title="Cancel" color="red" onPress={() => setModalVisible(false)} />
@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderWidth: 1,
     borderRadius: 10,
-    //width: '80%',
+    // width: '80%',
   },
   item: {
     padding: 10,
@@ -169,6 +169,19 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 10,
   },
+
+  fixedInput: {
+    width: 120, // Fixed width for consistency
+    height: 45, // Fixed height for uniformity
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    backgroundColor: "#fff",
+    textAlign: 'center', // Ensures proper number input alignment
+    fontSize: 16,
+  }
+
 });
 
 export default AddIngredients;

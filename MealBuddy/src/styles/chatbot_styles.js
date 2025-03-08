@@ -72,4 +72,27 @@ export default StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+
+  resetButton: {
+    paddingHorizontal: 8, 
+  },
+
+  shorterInput: {
+    flex: 1, // Allows it to take the remaining space
+    height: 45,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    backgroundColor: '#fff',
+    marginHorizontal: 5, // Adds spacing between reset and send buttons
+  },
+
+  sendButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  
+
 });

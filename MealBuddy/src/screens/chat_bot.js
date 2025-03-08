@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 import { 
   View, 
   Text, 
   TextInput, 
   TouchableOpacity, 
-  FlatList, 
   ActivityIndicator, 
   KeyboardAvoidingView, 
   Platform,
-  Linking
+  Linking,
+  ScrollView
 } from 'react-native';
 import styles from '../styles/chatbot_styles';
 import { GoogleGenerativeAI } from "@google/generative-ai";
@@ -19,9 +20,12 @@ import axios from 'axios';
 
 const Chatbot = () => {
   const [input, setInput] = useState('');
-  const [messages, setMessages] = useState([]); // start empty; initial greeting will be shown after a delay.
+  const [messages, setMessages] = useState([]); // All chat messages are stored here.
   const [loading, setLoading] = useState(false);
   const [fridgeItems, setFridgeItems] = useState([]);
+
+  // Reference to the ScrollView.
+  const scrollViewRef = useRef();
 
   // Typewriter effect: gradually reveal text in the last message.
   const typeMessage = (fullText, delay = 15) => {
@@ -64,20 +68,30 @@ const Chatbot = () => {
     return elements;
   };
 
-  // Show initial greeting after a loading period
-  useEffect(() => {
+  // Function to show initial greeting.
+  const showInitialGreeting = () => {
     setLoading(true);
-    const timer = setTimeout(() => {
+    setTimeout(() => {
       const greeting = "Hello! I'm your MealBuddy chatbot. Tell me what ingredients you have, and I'll suggest recipes!";
-      const newMessage = { id: Date.now().toString(), text: "", isUser: false };
+      const newMessage = { id: Date.now().toString(), text: greeting, isUser: false };
       setMessages([newMessage]);
-      typeMessage(greeting);
       setLoading(false);
-    }, 2000);
-    return () => clearTimeout(timer);
+    }, 1000);
+  };
+
+  // Reset chatbot function (clears chat and starts fresh).
+  const resetChatbot = () => {
+    setMessages([]);
+    setInput('');
+    showInitialGreeting();
+  };
+
+  // Load initial greeting on startup.
+  useEffect(() => {
+    showInitialGreeting();
   }, []);
 
-  // Live Firestore Listener for Fridge Items
+  // Live Firestore Listener for Fridge Items.
   useEffect(() => {
     if (!auth.currentUser) {
       console.error("❌ No authenticated user found.");
@@ -90,7 +104,6 @@ const Chatbot = () => {
         console.warn("⚠️ No ingredients found in Firestore.");
         setFridgeItems([]);
       } else {
-        // Only get the name of each ingredient.
         const items = snapshot.docs.map(doc => doc.data().name || "Unknown Ingredient");
         console.log("🔹 Updated fridge items:", items);
         setFridgeItems(items);
@@ -99,7 +112,7 @@ const Chatbot = () => {
     return () => unsubscribe();
   }, []);
 
-  // Fetch one YouTube video for a recipe (overall recipe video)
+  // Fetch one YouTube video for a recipe.
   const fetchYouTubeVideo = async (query) => {
     try {
       const response = await axios.get(`https://www.googleapis.com/youtube/v3/search`, {
@@ -118,7 +131,7 @@ const Chatbot = () => {
     }
   };
 
-  // Initialize Gemini AI
+  // Initialize Gemini AI.
   const genAI = new GoogleGenerativeAI(GOOGLE_GEMINI_API_KEY);
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
@@ -140,11 +153,8 @@ const Chatbot = () => {
         if (fridgeItems.length === 0) {
           responseText = "I cannot see anything in your fridge! Please add ingredients first.";
         } else {
-          // List only the ingredient names (highlighted)
           const ingredientList = fridgeItems.map(item => `• **${item}**`).join("\n");
-          responseText = `I see you have:\n${ingredientList}\n\nHere are some meal ideas:`;
-
-          // Open-ended prompt for detailed recipes.
+          responseText = `I see you have:\n${ingredientList}\n\nHere are some meal ideas:\n`;
           const prompt = `I have these ingredients: ${ingredientList}. Please suggest 3 creative and diverse meal recipes using only these ingredients. For each recipe, do the following:
 1. Start with "Recipe X:" (where X is 1, 2, 3).
 2. Provide a bold title for the recipe.
@@ -166,28 +176,21 @@ Separate each recipe with a line containing only "---".`;
           // Split the recipes using the delimiter.
           const recipeSections = recipeText.split('---').map(section => section.trim()).filter(section => section.length > 0);
           let finalRecipesText = "";
-          // Process each recipe individually.
           for (let i = 0; i < recipeSections.length; i++) {
             let section = recipeSections[i];
-            // Extract the recipe title (first bold text).
             const titleMatch = section.match(/(?:\*\*)([^*]+)(?:\*\*)/);
             let recipeTitle = titleMatch ? titleMatch[1] : `Recipe ${i+1}`;
-            // Fetch the overall recipe video for this recipe.
             const videoLink = await fetchYouTubeVideo(recipeTitle);
-            // Append the video link directly after this recipe.
             section += `\n\n🔗 Watch ${recipeTitle}: ${videoLink ? videoLink : "No video found"}`;
-            // Add a separator between recipes.
             finalRecipesText += section + "\n\n";
           }
           responseText += finalRecipesText;
-          // Append the final prompt.
           responseText += "\nLet me know if you need anything else.";
         }
       } else if (lowerInput.includes("what do i have in the fridge") || lowerInput.includes("my fridge")) {
         if (fridgeItems.length === 0) {
           responseText = "Your fridge is empty! Please add some ingredients.";
         } else {
-          // List ingredients as bullet points with highlights.
           const ingredientList = fridgeItems.map(item => `• **${item}**`).join("\n");
           responseText = `You currently have:\n${ingredientList}\n\nLet me know if you need anything else.`;
         }
@@ -199,7 +202,7 @@ Separate each recipe with a line containing only "---".`;
         responseText += "\n\nLet me know if you need anything else.";
       }
 
-      // Append a blank bot message then use typewriter effect.
+      // Append a blank bot message, then use the typewriter effect.
       const newBotMsg = { id: Date.now().toString(), text: "", isUser: false };
       setMessages(prev => [...prev, newBotMsg]);
       typeMessage(responseText);
@@ -213,18 +216,18 @@ Separate each recipe with a line containing only "---".`;
   };
 
   // Render messages with clickable links and highlighted text.
-  const renderMessage = ({ item }) => {
+  const renderMessage = (message) => {
     const linkRegex = /(https?:\/\/[^\s]+)/g;
-    const parts = item.text.split(linkRegex);
+    const parts = message.text.split(linkRegex);
     return (
-      <View style={[styles.messageBubble, item.isUser ? styles.userBubble : styles.botBubble]}>
+      <View key={message.id} style={[styles.messageBubble, message.isUser ? styles.userBubble : styles.botBubble]}>
         {parts.map((part, index) =>
           linkRegex.test(part) ? (
             <TouchableOpacity key={index} onPress={() => Linking.openURL(part)}>
               <Text style={[styles.messageText, styles.linkText]}>{part}</Text>
             </TouchableOpacity>
           ) : (
-            <Text key={index} style={[styles.messageText, item.isUser ? styles.userText : styles.botText]}>
+            <Text key={index} style={[styles.messageText, message.isUser ? styles.userText : styles.botText]}>
               {renderHighlightedText(part)}
             </Text>
           )
@@ -239,15 +242,20 @@ Separate each recipe with a line containing only "---".`;
       style={styles.container}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 50} 
     >
-      <FlatList
-        data={messages}
-        renderItem={renderMessage}
-        keyExtractor={(item) => item.id} 
-        style={styles.messageList}
+      <ScrollView
+        ref={scrollViewRef}
         contentContainerStyle={styles.messageListContent}
-        keyboardShouldPersistTaps="handled" 
-      />
+        onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+      >
+        {messages.map(message => renderMessage(message))}
+      </ScrollView>
       {loading && <ActivityIndicator size="large" color="#007bff" />}
+
+      {/* Reset Chat Button */}
+      <TouchableOpacity style={styles.resetButton} onPress={resetChatbot}>
+        <Ionicons name="refresh-circle" size={36} color="#007bff" />
+      </TouchableOpacity>
+
       <View style={styles.inputContainer}>
         <TextInput
           placeholder="Ask me anything about cooking..."
