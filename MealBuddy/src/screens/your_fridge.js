@@ -166,27 +166,13 @@ const YourFridge = () => {
           data={filteredIngredients}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <View style={[styles.item, item.used && styles.usedItem]}>
-              <TouchableOpacity
-                onPress={() => handleMarkAsUsed(item.id, item.used)}
-                style={styles.checkbox}
-              >
-                <MaterialIcons
-                  name={item.used ? "check-box" : "check-box-outline-blank"}
-                  size={24}
-                  color={item.used ? "green" : "#ccc"}
-                />
-              </TouchableOpacity>
-              <View style={styles.itemDetails}>
-                <Text style={styles.ingredientText}>
-                  {item.name} ({item.serving_size})
-                </Text>
-                <Text style={styles.nutritionText}>Calories: {item.calories}</Text>
-                <Text style={styles.nutritionText}>Protein: {item.protein}g</Text>
-                <Text style={styles.nutritionText}>Fat: {item.total_fat}g</Text>
-                <Text style={styles.nutritionText}>Water: {item.water}ml</Text>
-                <Text style={styles.nutritionText}>Sugar: {item.sugar}g</Text>
-              </View>
+            <View style={styles.item}>
+              <Text style={styles.ingredientText}>{item.name} ({item.serving_size})</Text>
+              <Text style={styles.nutritionText}>Calories: {item.calories}</Text>
+              <Text style={styles.nutritionText}>Protein: {item.protein}g</Text>
+              <Text style={styles.nutritionText}>Fat: {item.total_fat}g</Text>
+              <Text style={styles.nutritionText}>Water: {item.water}ml</Text>
+              <Text style={styles.nutritionText}>Sugar: {item.sugar}g</Text>
               <TouchableOpacity onPress={() => handleDelete(item.id)}>
                 <MaterialIcons name="delete" size={24} color="red" />
               </TouchableOpacity>
@@ -202,7 +188,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: "#f4f4f4",
+    backgroundColor: '#f3fefb',
   },
   searchContainer: {
     flexDirection: "row",

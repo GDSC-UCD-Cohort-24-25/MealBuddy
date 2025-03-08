@@ -54,16 +54,17 @@ const AddIngredients = () => {
 
       const scaleFactor = (grams / 100) * quantity;
 
+      const roundToOneDecimal = (value) => Math.round(value * 10) / 10;
       const ingredientData = {
         name: selectedIngredient.name,
         serving_size: `${grams}g per item`,
         quantity: quantity,
         total_weight: `${grams * quantity}g`,
-        calories: Math.round(selectedIngredient.calories * scaleFactor),
-        protein: Math.round(selectedIngredient.protein * scaleFactor * 10) / 10,
-        total_fat: Math.round(selectedIngredient.total_fat * scaleFactor * 10) / 10,
-        water: Math.round(selectedIngredient.water * scaleFactor * 10) / 10,
-        sugar: Math.round(selectedIngredient.sugar * scaleFactor * 10) / 10, 
+        calories: roundToOneDecimal(selectedIngredient.calories * scaleFactor),
+        protein: roundToOneDecimal(selectedIngredient.protein * scaleFactor),
+        total_fat: roundToOneDecimal(selectedIngredient.total_fat * scaleFactor),
+        water: roundToOneDecimal(selectedIngredient.water * scaleFactor),
+        sugar: roundToOneDecimal(selectedIngredient.sugar * scaleFactor),
       };
 
       await addDoc(collection(db, 'users', auth.currentUser.uid, 'ingredients'), ingredientData);
@@ -111,7 +112,7 @@ const AddIngredients = () => {
               value={gramInput}
               onChangeText={setGramInput}
               keyboardType="numeric"
-              style={styles.input}
+              style={styles.fixedInput}
             />
             <Text style={styles.modalText}>Enter the quantity:</Text>
             <TextInput
@@ -119,7 +120,7 @@ const AddIngredients = () => {
               value={quantityInput}
               onChangeText={setQuantityInput}
               keyboardType="numeric"
-              style={styles.input}
+              style={styles.fixedInput}
             />
             <Button title="Add Ingredient" onPress={handleAddIngredient} />
             <Button title="Cancel" color="red" onPress={() => setModalVisible(false)} />
@@ -131,14 +132,19 @@ const AddIngredients = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20 },
+  container: { 
+    flex: 1, 
+    padding: 20,
+    backgroundColor: '#f3fefb', // Updated background color
+  },
   input: {
     marginBottom: 10,
     padding: 10,
     borderColor: '#ccc',
+    backgroundColor: "#fff",
     borderWidth: 1,
-    borderRadius: 5,
-    width: '80%',
+    borderRadius: 10,
+    // width: '80%',
   },
   item: {
     padding: 10,
@@ -163,6 +169,19 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 10,
   },
+
+  fixedInput: {
+    width: 120, // Fixed width for consistency
+    height: 45, // Fixed height for uniformity
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    backgroundColor: "#fff",
+    textAlign: 'center', // Ensures proper number input alignment
+    fontSize: 16,
+  }
+
 });
 
 export default AddIngredients;

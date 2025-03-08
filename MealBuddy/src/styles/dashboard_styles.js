@@ -5,7 +5,7 @@ export default StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: Colors.background,
+    backgroundColor: '#f3fefb',
   },
   title: {
     fontSize: 24,
