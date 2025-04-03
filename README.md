@@ -11,6 +11,6 @@ MealBuddy is a mobile application designed to help users track their ingredients
 ## Tech Stack
 - **Frontend:** React Native, HTML, CSS, JavaScript
 - **Backend:** Firebase (Authentication & Database)
-- **AI Integration:** OpenAI API for meal recommendations
+- **AI Integration:** Gemini API for meal recommendations
 
 🚧 **This project is currently under development, with more features to be added in future updates.** 🚧
