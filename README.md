@@ -1,7 +1,7 @@
 # MealBuddy – AI-Powered Meal Planning App
 
 ## Overview
-MealBuddy is a mobile application designed to help users track their ingredients, generate meal suggestions, and monitor their nutritional intake. Built with **React Native**, **Firebase**, and **OpenAI’s API**, the app offers personalized meal recommendations based on available ingredients and dietary preferences.
+MealBuddy is a mobile application designed to help users track their ingredients, generate meal suggestions, and monitor their nutritional intake. Built with **React Native** and **Firebase**, the app offers personalized meal recommendations based on available ingredients and dietary preferences.
 
 ## Features (In Progress)
 - **Ingredient Tracking:** Users can log and manage their available ingredients.
