@@ -75,11 +75,11 @@ const YourFridge = () => {
           renderItem={({ item }) => (
             <View style={styles.item}>
               <Text style={styles.ingredientText}>{item.name} ({item.serving_size})</Text>
-              <Text style={styles.nutritionText}>🔥 Calories: {item.calories}</Text>
+              <Text style={styles.nutritionText}>🔥 Calories: {item.calories}kcal</Text>
               <Text style={styles.nutritionText}>💪 Protein: {item.protein}g</Text>
               <Text style={styles.nutritionText}>🍗 Fat: {item.total_fat}g</Text>
               <Text style={styles.nutritionText}>💧 Water: {item.water}ml</Text>
-              <Text style={styles.nutritionText}>🍭 Sugar: {item.sugar}g</Text>
+              <Text style={styles.nutritionText}>🍭 Sugar: {isNaN(item.sugar) ? 0 : item.sugar}g</Text>
               <TouchableOpacity onPress={() => handleDelete(item.id)}>
                 <MaterialIcons name="delete" size={24} color="red" />
               </TouchableOpacity>
