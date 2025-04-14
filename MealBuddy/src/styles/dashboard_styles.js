@@ -50,3 +50,14 @@ export default StyleSheet.create({
     fontWeight: '600',
     color: Colors.text,
   },
+  nutritionContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 5,
+  },
+  nutritionText: {
+    fontSize: 14,
+    fontWeight: '500',
+    marginRight: 8,
+  },
+});
