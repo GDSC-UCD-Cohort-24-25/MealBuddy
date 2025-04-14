@@ -132,8 +132,8 @@ const AuthScreen = ({ navigation }) => {
   
       console.log('User profile saved successfully');
     } catch (error) {
-      setError(error.message);
-      Alert.alert('Profile Submission Error', error.message);
+      setError(error.message); // still useful for UI debug or display
+      Alert.alert('Sign Up Failed', error.message); // friendly title + clean message
     } finally {
       setLoading(false);
     }
