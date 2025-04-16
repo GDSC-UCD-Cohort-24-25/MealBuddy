@@ -96,7 +96,7 @@ const Dashboard = () => {
 
       <View style={styles.largeTrackerRow}>
         <CircularTracker
-          label="Calories"
+          label="Calories (kcal)"
           value={totals.calories}
           maxValue={2000}
           color={Colors.calories}
