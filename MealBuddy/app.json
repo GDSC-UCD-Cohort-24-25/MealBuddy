@@ -5,22 +5,35 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
+    "scheme": "mealbuddy",
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": [], 
+    "assetBundlePatterns": [],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.yourcompany.mealbuddy",
       "buildNumber": "1.0.0",
-      "newArchEnabled": true
+      "newArchEnabled": true,
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.yourcompany.mealbuddy",
       "newArchEnabled": true
     },
-    "web": {
+    "web": {},
+    "extra": {
+      "eas": {
+        "projectId": "96d1a77f-fa21-45fa-885d-d75842cbfb0c"
+      }
     }
   }
 }
-

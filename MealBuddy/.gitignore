@@ -39,4 +39,8 @@ app-example
 
 .env
 
+<<<<<<< HEAD
 .yarn.lock
+=======
+GoogleService-Info.plist
+>>>>>>> origin/main
