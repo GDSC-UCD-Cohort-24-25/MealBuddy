@@ -112,25 +112,53 @@ const AuthScreen = ({ navigation }) => {
   
   const handleSubmitProfile = async () => {
     try {
+      // First validate all fields are filled
+      if (!name || !age || !gender || !height || !weight) {
+        setError('Please fill out all profile fields.');
+        return;
+      }
+  
       setError('');
       setLoading(true);
       
-      // Now, proceed to sign-up process after profile submission
-      const user = await signUp(email, password); // Sign-up at this point
+      // Sign-up process
+      const user = await signUp(email, password);
       
       if (!user || !user.uid) {
         throw new Error('User UID is undefined after sign-up.');
       }
   
-      navigation.replace('MainTabs');
-  
-      // Save user profile details after successful sign-up
+      // Use batch write to create multiple documents at once
       const batch = writeBatch(db);
+      
+      // Create user profile
       const userRef = doc(db, 'users', user.uid);
       batch.set(userRef, { name, age, gender, weight, height });
+      
+      // Initialize nutrition data with zeros
+      const nutritionRef = doc(db, 'users', user.uid, 'nutrition_logs', 'summary');
+      batch.set(nutritionRef, {
+        calories: 0,
+        water: 0,
+        protein: 0,
+        sugar: 0,
+        fats: 0,
+        lastUpdated: new Date()
+      });
+      
+      // Initialize empty ingredients collections
+      const ingredientsRef = doc(db, 'users', user.uid, 'ingredients', 'meta');
+      batch.set(ingredientsRef, {
+        items: [],
+        lastUpdated: new Date()
+      });
+      
+      // Commit all changes as a batch
       await batch.commit();
-  
-      console.log('User profile saved successfully');
+      
+      console.log('User profile and nutrition data initialized successfully');
+      navigation.replace('MainTabs');
+      
     } catch (error) {
       setError(error.message);
       Alert.alert('Profile Submission Error', error.message);
