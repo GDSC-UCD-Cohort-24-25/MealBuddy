@@ -2,10 +2,12 @@ import { StyleSheet } from 'react-native';
 import Colors from '../constants/Colors';
 
 const styles = StyleSheet.create({
+  scrollContainer: {
+    flex: 1,
+    backgroundColor: '#f3fefb',
+  },
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     padding: 20,
     backgroundColor: '#f3fefb',
   },
@@ -16,7 +18,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f3fefb',
   },
   title: {
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: 'bold',
     color: Colors.primary,
     marginBottom: 10,
@@ -71,6 +73,87 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  headerContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  profileImageContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: Colors.progressBarBackground,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  profileInitial: {
+    fontSize: 40,
+    fontWeight: 'bold',
+    color: Colors.text,
+  },
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  cardTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: Colors.text,
+    marginLeft: 10,
+  },
+  cardContent: {
+    paddingHorizontal: 10,
+  },
+  metricRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  metricLabel: {
+    fontSize: 16,
+    color: Colors.text,
+    fontWeight: '500',
+  },
+  metricValueContainer: {
+    flexDirection: 'column',
+    alignItems: 'flex-end',
+  },
+  metricValue: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: Colors.primary,
+  },
+  metricCategory: {
+    fontSize: 14,
+    color: Colors.primary,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  infoLabel: {
+    fontSize: 16,
+    color: Colors.text,
+    fontWeight: '500',
+  },
+  infoValue: {
+    fontSize: 16,
+    color: Colors.secondary,
   },
 });
 

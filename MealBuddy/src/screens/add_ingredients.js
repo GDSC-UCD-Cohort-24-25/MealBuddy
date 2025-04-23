@@ -4,6 +4,7 @@ import { db, auth } from '../services/firebase_config';
 import { collection, addDoc } from 'firebase/firestore';
 import cleanedNutrition from '../../data/cleaned_nutrition.json';
 import { useNavigation } from '@react-navigation/native';
+import { Picker } from '@react-native-picker/picker';
 
 const AddIngredients = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -11,6 +12,7 @@ const AddIngredients = () => {
   const [selectedIngredient, setSelectedIngredient] = useState(null);
   const [gramInput, setGramInput] = useState('0');
   const [quantityInput, setQuantityInput] = useState('1');
+  const [mealCategory, setMealCategory] = useState('breakfast');
   const [modalVisible, setModalVisible] = useState(false);
   const navigation = useNavigation();
 
@@ -65,6 +67,7 @@ const AddIngredients = () => {
         total_fat: roundToOneDecimal(selectedIngredient.total_fat * scaleFactor),
         water: roundToOneDecimal(selectedIngredient.water * scaleFactor),
         sugar: roundToOneDecimal(selectedIngredient.sugar * scaleFactor),
+        mealCategory: mealCategory,
       };
 
       await addDoc(collection(db, 'users', auth.currentUser.uid, 'ingredients'), ingredientData);
@@ -74,6 +77,7 @@ const AddIngredients = () => {
       setSearchQuery('');
       setGramInput('0');
       setQuantityInput('1');
+      setMealCategory('breakfast');
       navigation.navigate('Your Fridge');
     } catch (error) {
       console.error('Error adding ingredient:', error);
@@ -122,6 +126,17 @@ const AddIngredients = () => {
               keyboardType="numeric"
               style={styles.fixedInput}
             />
+            <Text style={styles.modalText}>Select meal category:</Text>
+            <Picker
+              selectedValue={mealCategory}
+              onValueChange={(itemValue) => setMealCategory(itemValue)}
+              style={styles.picker}
+            >
+              <Picker.Item label="Breakfast" value="breakfast" />
+              <Picker.Item label="Lunch" value="lunch" />
+              <Picker.Item label="Dinner" value="dinner" />
+              <Picker.Item label="Snack" value="snack" />
+            </Picker>
             <Button title="Add Ingredient" onPress={handleAddIngredient} />
             <Button title="Cancel" color="red" onPress={() => setModalVisible(false)} />
           </View>
@@ -180,7 +195,16 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     textAlign: 'center', // Ensures proper number input alignment
     fontSize: 16,
-  }
+  },
+  picker: {
+    width: 200,
+    height: 40,
+    marginBottom: 15,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 8,
+    backgroundColor: "#fff",
+  },
 
 });
 
