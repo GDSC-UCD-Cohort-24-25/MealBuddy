@@ -39,4 +39,4 @@ app-example
 
 .env
 
-GoogleService-Info.plist
+GoogleService-Info.plist.DS_Store
