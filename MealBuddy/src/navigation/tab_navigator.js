@@ -19,6 +19,8 @@ import Colors from '../constants/Colors';
 import { Picker } from '@react-native-picker/picker'; 
 import { Menu, MenuTrigger, MenuOptions, MenuOption } from 'react-native-paper';
 import { forgotPassword } from '../services/auth_service';
+import { useGoogleSignIn } from '../services/google_sign_in';
+
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -39,6 +41,7 @@ const AuthScreen = ({ navigation }) => {
   const [userProfile, setUserProfile] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const { signIn: googleSignIn } = useGoogleSignIn();
 
   const [passwordVisible, setPasswordVisible] = useState(false);
 
@@ -195,6 +198,25 @@ const AuthScreen = ({ navigation }) => {
       setLoading(false);
     }
   };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      const user = await googleSignIn();
+      if (user && user.uid) {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (userDoc.exists()) {
+          setUserProfile(userDoc.data());
+          navigation.replace('MainTabs');
+        } else {
+          Alert.alert('New Account', 'Please complete your profile.');
+          setMode('profile');
+        }
+      }
+    } catch (error) {
+      Alert.alert('Google Sign-In Failed', error.message);
+    }
+  };
+  
   
 
   return (
@@ -538,26 +560,40 @@ const AuthScreen = ({ navigation }) => {
                       </Text>
                     </TouchableOpacity>
 
-                    {/* Blue Box Log In Button */}
-                    <TouchableOpacity
-                      onPress={handleLogIn}
-                      style={{
-                        backgroundColor: '#24a0ed', // Blue background color
-                        paddingVertical: 15,
-                        paddingHorizontal: 40,
-                        borderRadius: 10, // Rounded corners (optional)
-                        alignItems: 'center',
-                        marginBottom: 20,
-                      }}
-                    >
-                      <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>
-                        Log In
-                      </Text>
-                    </TouchableOpacity>
-                     {/* Back to Sign Up Link */}
-                    <TouchableOpacity onPress={() => {setMode('signup'); resetInputs();}}>
-                    <Text style={{ color: Colors.primary, textAlign: 'center', marginTop: 10 }}>Don't have an account? Sign Up</Text>
-                    </TouchableOpacity>
+      <TouchableOpacity
+        onPress={handleLogIn}
+        style={{
+          backgroundColor: '#24a0ed', // Blue background color
+          paddingVertical: 15,
+          paddingHorizontal: 40,
+          borderRadius: 10, // Rounded corners (optional)
+          alignItems: 'center',
+          marginBottom: 20,
+        }}
+      >
+        <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>
+          Log In
+        </Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => handleGoogleSignIn()}
+        style={{
+          backgroundColor: '#4285F4',
+          paddingVertical: 15,
+          paddingHorizontal: 40,
+          borderRadius: 10,
+          alignItems: 'center',
+          marginBottom: 20,
+        }}
+      >
+        <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>
+          Sign in with Google
+        </Text>
+      </TouchableOpacity>
+      {/* Back to Sign Up Link */}
+      <TouchableOpacity onPress={() => { setMode('signup'); resetInputs(); }}>
+        <Text style={{ color: Colors.primary, textAlign: 'center', marginTop: 10 }}>Don't have an account? Sign Up</Text>
+      </TouchableOpacity>
                   </>
                 )}
               </>
