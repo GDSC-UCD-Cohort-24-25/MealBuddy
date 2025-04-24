@@ -155,6 +155,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: Colors.secondary,
   },
+  profileImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+  },
 });
 
 export default styles;

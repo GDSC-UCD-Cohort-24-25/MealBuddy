@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
-import { 
-  View, 
-  Text, 
-  ActivityIndicator, 
-  TouchableOpacity, 
-  Alert, 
-  ScrollView, 
+import {
+  View,
+  Text,
+  ActivityIndicator,
+  TouchableOpacity,
+  Alert,
+  ScrollView,
   Image,
-  StyleSheet
+  StyleSheet,
 } from "react-native";
 import { db, auth } from "../services/firebase_config";
 import { doc, onSnapshot, updateDoc } from "firebase/firestore";
@@ -16,12 +16,14 @@ import { signOut } from "firebase/auth";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import Colors from "../constants/Colors";
+import * as ImagePicker from "expo-image-picker";
 
 const Profile = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [editMode, setEditMode] = useState(false);
+  const [profileImage, setProfileImage] = useState(null);
   const navigation = useNavigation();
   const unsubscribeRef = useRef(null);
 
@@ -211,12 +213,18 @@ const Profile = () => {
     <ScrollView style={styles.scrollContainer}>
       <View style={styles.container}>
         {/* Header with profile image and name */}
-        <View style={styles.headerContainer}>
-          <View style={styles.profileImageContainer}>
-            <Text style={styles.profileInitial}>{user?.name?.charAt(0) || "U"}</Text>
+          <View style={styles.headerContainer}>
+            <TouchableOpacity onPress={pickImage}>
+              <View style={styles.profileImageContainer}>
+                {profileImage ? (
+                  <Image source={{ uri: profileImage }} style={styles.profileImage} />
+                ) : (
+                  <Text style={styles.profileInitial}>{user?.name?.charAt(0) || "U"}</Text>
+                )}
+              </View>
+            </TouchableOpacity>
+            <Text style={styles.title}>{user?.name}</Text>
           </View>
-          <Text style={styles.title}>{user?.name}</Text>
-        </View>
 
         {/* Sign Out Button */}
         <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
@@ -305,5 +313,21 @@ const Profile = () => {
     </ScrollView>
   );
 };
+
+  const pickImage = async () => {
+    // No permissions request is necessary for launching the image library
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    console.log(result);
+
+    if (!result.canceled) {
+      setProfileImage(result.assets[0].uri);
+    }
+  };
 
 export default Profile;
