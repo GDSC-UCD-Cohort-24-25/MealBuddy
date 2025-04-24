@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
 import CircularTracker from '../components/circular_tracker';
 import styles from '../styles/dashboard_styles';
 import Colors from '../constants/Colors';
-import { PieChart } from 'react-native-chart-kit';
+import { PieChart, BarChart } from 'react-native-chart-kit';
 import { db, auth } from '../services/firebase_config';
 import { collection, onSnapshot } from 'firebase/firestore';
 
@@ -17,12 +17,19 @@ const Dashboard = () => {
     fats: 0,
     water: 0,
   });
+  const [mealIngredients, setMealIngredients] = useState({
+    breakfast: [],
+    lunch: [],
+    dinner: [],
+    snack: [],
+  });
 
   useEffect(() => {
     if (!auth.currentUser) return;
     const userId = auth.currentUser.uid;
     const ingredientsRef = collection(db, 'users', userId, 'ingredients');
     const safeValue = (value) => (isNaN(value) || value === null ? 0 : value);
+
     const unsubscribe = onSnapshot(ingredientsRef, (snapshot) => {
       let newTotals = {
         calories: 0,
@@ -31,6 +38,13 @@ const Dashboard = () => {
         fats: 0,
         water: 0,
       };
+      const newMealIngredients = {
+        breakfast: [],
+        lunch: [],
+        dinner: [],
+        snack: [],
+      };
+
       snapshot.forEach((doc) => {
         const data = doc.data();
         newTotals.calories += safeValue(data.calories);
@@ -38,7 +52,13 @@ const Dashboard = () => {
         newTotals.sugar += safeValue(data.sugar);
         newTotals.fats += safeValue(data.total_fat);
         newTotals.water += safeValue(data.water);
+
+        // Group ingredients by meal category
+        if (data.mealCategory) {
+          newMealIngredients[data.mealCategory].push(data);
+        }
       });
+
       setTotals({
         calories: roundToOneDecimal(newTotals.calories),
         protein: roundToOneDecimal(newTotals.protein),
@@ -46,6 +66,7 @@ const Dashboard = () => {
         fats: roundToOneDecimal(newTotals.fats),
         water: roundToOneDecimal(newTotals.water),
       });
+      setMealIngredients(newMealIngredients);
     });
 
     return () => unsubscribe();
@@ -91,7 +112,7 @@ const Dashboard = () => {
   ];
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <Text style={styles.title}>Nutrition Summary</Text>
 
       <View style={styles.largeTrackerRow}>
@@ -162,7 +183,104 @@ const Dashboard = () => {
           center={[10, 10]}
         />
       </View>
-    </View>
+
+      {/* Bar Chart */}
+      <View style={{ marginTop: 20 }}>
+        <BarChart
+          data={{
+            labels: ['Calories', 'Water', 'Protein', 'Sugar', 'Fats'],
+            datasets: [
+              {
+                data: [
+                  totals.calories,
+                  totals.water,
+                  totals.protein,
+                  totals.sugar,
+                  totals.fats,
+                ],
+              },
+            ],
+          }}
+          width={370}
+          height={250}
+          yAxisLabel=""
+          yAxisSuffix="g"
+          chartConfig={{
+            backgroundColor: '#ffffff',
+            backgroundGradientFrom: '#ffffff',
+            backgroundGradientTo: '#ffffff',
+            decimalPlaces: 0,
+            color: (opacity = 1) => `rgba(26, 255, 146, ${opacity})`,
+            labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+            barPercentage: 0.7,
+            style: {
+              borderRadius: 16,
+            },
+          }}
+          style={{
+            marginVertical: 8,
+            borderRadius: 16,
+          }}
+        />
+      </View>
+
+      {/* Meal Categories */}
+      <View style={styles.mealContainer}>
+        <Text style={styles.mealTitle}>Breakfast</Text>
+        {mealIngredients.breakfast.map((item, index) => (
+          <View key={index} style={styles.foodItem}>
+            <Text style={styles.foodName}>{item.name}</Text>
+            <View style={styles.nutritionContainer}>
+              <Text style={styles.nutritionText}>Calories: {item.calories} kcal</Text>
+              <Text style={styles.nutritionText}>Protein: {item.protein} g</Text>
+              <Text style={styles.nutritionText}>Fat: {item.total_fat} g</Text>
+            </View>
+          </View>
+        ))}
+      </View>
+
+      <View style={styles.mealContainer}>
+        <Text style={styles.mealTitle}>Lunch</Text>
+        {mealIngredients.lunch.map((item, index) => (
+          <View key={index} style={styles.foodItem}>
+            <Text style={styles.foodName}>{item.name}</Text>
+            <View style={styles.nutritionContainer}>
+              <Text style={styles.nutritionText}>Calories: {item.calories} kcal</Text>
+              <Text style={styles.nutritionText}>Protein: {item.protein} g</Text>
+              <Text style={styles.nutritionText}>Fat: {item.total_fat} g</Text>
+            </View>
+          </View>
+        ))}
+      </View>
+
+      <View style={styles.mealContainer}>
+        <Text style={styles.mealTitle}>Dinner</Text>
+        {mealIngredients.dinner.map((item, index) => (
+          <View key={index} style={styles.foodItem}>
+            <Text style={styles.foodName}>{item.name}</Text>
+            <View style={styles.nutritionContainer}>
+              <Text style={styles.nutritionText}>Calories: {item.calories} kcal</Text>
+              <Text style={styles.nutritionText}>Protein: {item.protein} g</Text>
+              <Text style={styles.nutritionText}>Fat: {item.total_fat} g</Text>
+            </View>
+          </View>
+        ))}
+      </View>
+
+      <View style={styles.mealContainer}>
+        <Text style={styles.mealTitle}>Snack</Text>
+        {mealIngredients.snack.map((item, index) => (
+          <View key={index} style={styles.foodItem}>
+            <Text style={styles.foodName}>{item.name}</Text>
+            <View style={styles.nutritionContainer}>
+              <Text style={styles.nutritionText}>Calories: {item.calories} kcal</Text>
+              <Text style={styles.nutritionText}>Protein: {item.protein} g</Text>
+              <Text style={styles.nutritionText}>Fat: {item.total_fat} g</Text>
+            </View>
+          </View>
+        ))}
+      </View>
+    </ScrollView>
   );
 };
 

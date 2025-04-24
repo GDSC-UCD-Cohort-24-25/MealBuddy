@@ -34,6 +34,8 @@ const AuthScreen = ({ navigation }) => {
   const [gender, setGender] = useState('');
   const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');
+  const [activityLevel, setActivityLevel] = useState('moderate');
+  const [dietaryPreferences, setDietaryPreferences] = useState('');
   const [userProfile, setUserProfile] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -127,13 +129,22 @@ const AuthScreen = ({ navigation }) => {
       // Save user profile details after successful sign-up
       const batch = writeBatch(db);
       const userRef = doc(db, 'users', user.uid);
-      batch.set(userRef, { name, age, gender, weight, height });
+      batch.set(userRef, { 
+        name, 
+        age, 
+        gender, 
+        weight, 
+        height,
+        activityLevel,
+        dietaryPreferences,
+        createdAt: new Date()
+      });
       await batch.commit();
   
       console.log('User profile saved successfully');
     } catch (error) {
-      setError(error.message);
-      Alert.alert('Profile Submission Error', error.message);
+      setError(error.message); // still useful for UI debug or display
+      Alert.alert('Sign Up Failed', error.message); // friendly title + clean message
     } finally {
       setLoading(false);
     }
@@ -359,39 +370,87 @@ const AuthScreen = ({ navigation }) => {
                       }}
                     />
 
-                    {/* Height Input */}
-                    <TextInput
-                      placeholder="Enter Your Height (in Feet)"
-                      value={height}
-                      onChangeText={setHeight}
-                      keyboardType="default" 
-                      style={{
-                        backgroundColor: '#fff',
-                        borderRadius: 10,
-                        padding: 12,
-                        marginBottom: 20,
-                        borderColor: '#ddd',
-                        borderWidth: 1,
-                        fontSize: 16,
-                      }}
-                    />
+                    {/* Height Input with feet/inches format */}
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 }}>
+                      <View style={{ flex: 1, marginRight: 10 }}>
+                        <Text style={{ fontSize: 14, color: '#555', marginBottom: 5 }}>Height</Text>
+                        <TextInput
+                          placeholder="Feet"
+                          value={height}
+                          onChangeText={setHeight}
+                          keyboardType="numeric" 
+                          style={{
+                            backgroundColor: '#fff',
+                            borderRadius: 10,
+                            padding: 12,
+                            borderColor: '#ddd',
+                            borderWidth: 1,
+                            fontSize: 16,
+                          }}
+                        />
+                      </View>
+                    </View>
 
-                    {/* Weight Input */}
-                    <TextInput
-                      placeholder="Enter Your Weight (in Pounds)"
-                      value={weight}
-                      onChangeText={setWeight}
-                      keyboardType="numeric"
-                      style={{
+                    {/* Weight Input with lbs */}
+                    <View style={{ marginBottom: 20 }}>
+                      <Text style={{ fontSize: 14, color: '#555', marginBottom: 5 }}>Weight (lbs)</Text>
+                      <TextInput
+                        placeholder="Enter Your Weight"
+                        value={weight}
+                        onChangeText={setWeight}
+                        keyboardType="numeric"
+                        style={{
+                          backgroundColor: '#fff',
+                          borderRadius: 10,
+                          padding: 12,
+                          borderColor: '#ddd',
+                          borderWidth: 1,
+                          fontSize: 16,
+                        }}
+                      />
+                    </View>
+
+                    {/* Activity Level */}
+                    <View style={{ marginBottom: 20 }}>
+                      <Text style={{ fontSize: 14, color: '#555', marginBottom: 5 }}>Activity Level</Text>
+                      <View style={{ 
                         backgroundColor: '#fff',
                         borderRadius: 10,
-                        padding: 12,
-                        marginBottom: 20,
                         borderColor: '#ddd',
                         borderWidth: 1,
-                        fontSize: 16,
-                      }}
-                    />
+                        overflow: 'hidden'
+                      }}>
+                        <Picker
+                          selectedValue={activityLevel || 'moderate'}
+                          onValueChange={(itemValue) => setActivityLevel(itemValue)}
+                          style={{ height: 50 }}
+                        >
+                          <Picker.Item label="Sedentary (little or no exercise)" value="sedentary" />
+                          <Picker.Item label="Light (light exercise 1-3 days/week)" value="light" />
+                          <Picker.Item label="Moderate (moderate exercise 3-5 days/week)" value="moderate" />
+                          <Picker.Item label="Active (hard exercise 6-7 days/week)" value="active" />
+                          <Picker.Item label="Very Active (very hard exercise & physical job)" value="very_active" />
+                        </Picker>
+                      </View>
+                    </View>
+
+                    {/* Dietary Preferences */}
+                    <View style={{ marginBottom: 20 }}>
+                      <Text style={{ fontSize: 14, color: '#555', marginBottom: 5 }}>Dietary Preferences (Optional)</Text>
+                      <TextInput
+                        placeholder="e.g., Vegetarian, Vegan, Keto, etc."
+                        value={dietaryPreferences}
+                        onChangeText={setDietaryPreferences}
+                        style={{
+                          backgroundColor: '#fff',
+                          borderRadius: 10,
+                          padding: 12,
+                          borderColor: '#ddd',
+                          borderWidth: 1,
+                          fontSize: 16,
+                        }}
+                      />
+                    </View>
 
                     {/* Submit Button */}
                     <TouchableOpacity

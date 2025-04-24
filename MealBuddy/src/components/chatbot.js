@@ -12,7 +12,14 @@ const Chatbot = () => {
         'https://api.openai.com/v1/chat/completions',
         {
           model: 'gpt-3.5-turbo',
-          messages: [{ role: 'user', content: input }],
+          messages: [
+            {
+              role: 'system',
+              content:
+                'You are a helpful meal planning assistant. Provide concise and informative responses related to meal planning, nutrition, recipes, and healthy eating habits. Keep your answers short and easy to understand.',
+            },
+            { role: 'user', content: input },
+          ],
         },
         {
           headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
