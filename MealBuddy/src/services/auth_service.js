@@ -1,6 +1,9 @@
 import { auth } from './firebase_config';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 
+
+
+
 // Sign Up Function with Validation
 // auth_service.js
 export const signUp = async (email, password) => {
@@ -81,3 +84,4 @@ export const forgotPassword = async (email) => {
     throw new Error(error.message);
   }
 };
+
