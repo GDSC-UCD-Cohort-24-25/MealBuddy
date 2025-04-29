@@ -4,7 +4,9 @@ import * as AuthSession from 'expo-auth-session';
 import { useState } from 'react';
 import { GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
 import { auth } from './firebase_config';
+import { EXPO_CLIENT_ID } from '@env';
 import { IOS_CLIENT_ID } from '@env';
+import { ANDROID_CLIENT_ID } from '@env';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -12,10 +14,15 @@ export const useGoogleSignIn = () => {
   const [loading, setLoading] = useState(false);
 
   const [request, response, promptAsync] = Google.useAuthRequest({
-    iosClientId: IOS_CLIENT_ID,
+    expoClientId: EXPO_CLIENT_ID,   // ✅ use your Expo Web client ID
+    iosClientId: IOS_CLIENT_ID,     // optional, for later
+    androidClientId: ANDROID_CLIENT_ID, // optional, for later
     scopes: ['profile', 'email'],
-    redirectUri: AuthSession.makeRedirectUri({ useProxy: true }),
+    redirectUri: AuthSession.makeRedirectUri({
+      useProxy: true,   // ✅ VERY IMPORTANT for Expo Go
+    }),
   });
+  
 
   const signIn = async () => {
     setLoading(true);
