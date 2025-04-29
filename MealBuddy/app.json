@@ -5,12 +5,8 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
-    "scheme": "mealbuddy",
-    "platforms": [
-      "ios",
-      "android",
-      "web"
-    ],
+    "scheme": "com.mealbuddy.app",   
+    "platforms": ["ios", "android", "web"],
     "updates": {
       "fallbackToCacheTimeout": 0
     },
