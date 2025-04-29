@@ -17,7 +17,7 @@
     "assetBundlePatterns": [],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.yourcompany.mealbuddy",
+      "bundleIdentifier": "com.mealbuddy.app",
       "buildNumber": "1.0.0",
       "newArchEnabled": true,
       "googleServicesFile": "./GoogleService-Info.plist",
@@ -26,7 +26,7 @@
       }
     },
     "android": {
-      "package": "com.yourcompany.mealbuddy",
+      "package": "com.mealbuddy.app",
       "newArchEnabled": true
     },
     "web": {},
