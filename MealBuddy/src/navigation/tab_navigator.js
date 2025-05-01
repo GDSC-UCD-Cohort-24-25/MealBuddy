@@ -31,8 +31,12 @@ const Stack = createStackNavigator();
 
 
 const heightOptions = [
+  "4'0", "4'1", "4'2", "4'3", "4'4", "4'5", "4'6", "4'7", "4'8",
   "4'10", "4'11", "5'0", "5'1", "5'2", "5'3", "5'4", "5'5",
-  "5'6", "5'7", "5'8", "5'9", "5'10", "5'11", "6'0", "6'1", "6'2"
+  "5'6", "5'7", "5'8", "5'9", "5'10", "5'11", "6'0", "6'1", "6'2",
+  "6'3", "6'4", "6'5", "6'6", "6'7", "6'8", "6'9", "6'10", "6'11",
+  "7'0", "7'1", "7'2", "7'3", "7'4", "7'5", "7'6", "7'7", "7'8",
+  "7'9", "7'10", "7'11", "8'0", "8'1", "8'2", "8'3", "8'4", "8'5",
 ];
 
 const activityOptions = [
@@ -397,35 +401,25 @@ const AuthScreen = ({ navigation }) => {
                       </Text>
 
                       {error ? <Text style={{ color: 'red' }}>{error}</Text> : null}
-                    {/* Email Input Box */}
-                    <TextInput
-                      placeholder="Enter Email"
-                      value={email}
-                      onChangeText={setEmail}
-                      keyboardType="email-address"
-                      style={{
-                        borderWidth: 1, // Add border
-                        borderColor: '#ccc', // Border color
-                        borderRadius: 8, // Rounded corners
-                        padding: 10, // Padding inside the box
-                        marginBottom: 10, // Space between inputs
-                      }}
-                    />
+                      {/* Email Input Box */}
+                      <TextInput
+                        placeholder="Enter Email"
+                        value={email}
+                        onChangeText={setEmail}
+                        keyboardType="email-address"
+                        style={styles.inputBox}
+                      />
+
                       {/* Password Input Box */}
                       <View style={{ position: 'relative' }}>
-                        <TextInput
-                          placeholder="Enter Password"
-                          value={password}
-                          onChangeText={setPassword}
-                          secureTextEntry={!passwordVisible}
-                          style={{
-                            borderWidth: 1,
-                            borderColor: '#ccc',
-                            borderRadius: 8,
-                            padding: 10,
-                            marginBottom: 10,
-                          }}
-                        />
+                      <TextInput
+                        placeholder="Enter Password"
+                        value={password}
+                        onChangeText={setPassword}
+                        secureTextEntry={!passwordVisible}
+                        style={styles.inputBox}
+                      />
+
                         
                         {/* Toggle Visibility Button (Eye Icon) */}
                         <TouchableOpacity 
@@ -481,6 +475,7 @@ const AuthScreen = ({ navigation }) => {
                       ) : null}
 
                       {/* Name Input */}
+                      <Text style={{ fontSize: 14, color: '#555', marginBottom: 5 }}>Name</Text>
                       <TextInput
                         placeholder="Enter Your Name"
                         value={name}
@@ -497,6 +492,7 @@ const AuthScreen = ({ navigation }) => {
                       />
 
                       {/* Age Input */}
+                      <Text style={{ fontSize: 14, color: '#555', marginBottom: 5 }}>Age</Text>
                       <TextInput
                         placeholder="Enter Your Age"
                         value={age}
@@ -514,6 +510,7 @@ const AuthScreen = ({ navigation }) => {
                       />
 
                         {/* Gender Input */}
+                      <Text style={{ fontSize: 14, color: '#555', marginBottom: 5 }}>Gender</Text>
                       <TextInput
                         placeholder="Enter Your Gender"
                         value={gender}
@@ -650,19 +647,14 @@ const AuthScreen = ({ navigation }) => {
 
                     {error ? <Text style={{ color: 'red' }}>{error}</Text> : null}
                    {/* Email Input Box */}
-                  <TextInput
+                   <TextInput
                     placeholder="Enter Email"
                     value={email}
                     onChangeText={setEmail}
                     keyboardType="email-address"
-                    style={{
-                      borderWidth: 1, // Add border
-                      borderColor: '#ccc', // Border color
-                      borderRadius: 8, // Rounded corners
-                      padding: 10, // Padding inside the box
-                      marginBottom: 10, // Space between inputs
-                    }}
+                    style={styles.inputBox}
                   />
+
                   
                   {/* Password Input Box */}
                   <TextInput
@@ -670,14 +662,9 @@ const AuthScreen = ({ navigation }) => {
                     value={password}
                     onChangeText={setPassword}
                     secureTextEntry={!passwordVisible}
-                    style={{
-                      borderWidth: 1, // Add border
-                      borderColor: '#ccc', // Border color
-                      borderRadius: 8, // Rounded corners
-                      padding: 10, // Padding inside the box
-                      marginBottom: 10, // Space between inputs
-                    }}
+                    style={styles.inputBox}
                   />
+
                   
                   {/* Toggle Visibility Button (Eye Icon) */}
                     <TouchableOpacity onPress={() => setPasswordVisible(!passwordVisible)}>
@@ -685,7 +672,7 @@ const AuthScreen = ({ navigation }) => {
                         name={passwordVisible ? 'eye-off' : 'eye'} 
                         size={24} 
                         color="#000" 
-                        style={{ position: 'absolute', right: 10, top: -40 }} // Positioning the eye icon inside the text input box
+                        style={{ position: 'absolute', right: 10, top: -50 }} // Positioning the eye icon inside the text input box
                       />
                     </TouchableOpacity>
 
@@ -748,13 +735,13 @@ const MainTabs = () => (
     screenOptions={({ route }) => ({
       tabBarIcon: ({ color, size }) => {
         let iconName;
-        if (route.name === 'Dashboard') iconName = 'home-outline';
+        if (route.name === 'Dashboard') iconName = 'home-outline' ;
         else if (route.name === 'Your Fridge') iconName = 'basket-outline';
         else if (route.name === 'Add') iconName = 'add-circle-outline';
         else if (route.name === 'Chatbot') iconName = 'chatbubble-ellipses-outline';
         else if (route.name === 'Profile') iconName = 'person-outline';
 
-        return <Ionicons name={iconName} size={size} color={color} />;
+        return <Ionicons name={iconName} size={size} color={"#5e2bff"} />;
       },
       tabBarActiveTintColor: Colors.tabBarActive,
       tabBarInactiveTintColor: Colors.tabBarInactive,
@@ -851,6 +838,17 @@ const styles = StyleSheet.create({
   pickerStyle: {
     color: '#000',
     fontSize: 16,
+  },
+  
+  inputBox: {
+    backgroundColor: '#f8f8f8',
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 15,
+    fontSize: 16,
+    marginBottom: 15,
   },
   
   
