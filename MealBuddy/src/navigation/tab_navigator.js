@@ -20,17 +20,62 @@ import { Picker } from '@react-native-picker/picker';
 import { Menu, MenuTrigger, MenuOptions, MenuOption } from 'react-native-paper';
 import { forgotPassword } from '../services/auth_service';
 import { useGoogleSignIn } from '../services/google_sign_in';
+import { Image } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { runOnJS } from 'react-native-reanimated';
+import { Modal } from 'react-native';
 
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
 
+const heightOptions = [
+  "4'10", "4'11", "5'0", "5'1", "5'2", "5'3", "5'4", "5'5",
+  "5'6", "5'7", "5'8", "5'9", "5'10", "5'11", "6'0", "6'1", "6'2"
+];
+
+const activityOptions = [
+  'Sedentary', 'Light', 'Moderate', 'Active', 'Very Active'
+];
+
+const dietOptions = [
+  'None', 'Vegetarian', 'Vegan', 'Keto', 'Paleo', 'Low Carb', 'High Protein'
+];
+
 
 const AuthScreen = ({ navigation }) => {
-  const [mode, setMode] = useState(null); // 'signup' or 'login'
+  const [mode, setMode] = useState(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const fadeAnim = useSharedValue(0);
+  const translateY = useSharedValue(50);
+
+  const formOpacity = useSharedValue(1);
+  const formTranslateY = useSharedValue(0);
+
+  const [heightPickerVisible, setHeightPickerVisible] = useState(false);
+  const [selectedHeight, setSelectedHeight] = useState('');
+  const [activityPickerVisible, setActivityPickerVisible] = useState(false);
+  const [dietPickerVisible, setDietPickerVisible] = useState(false);
+
+  useEffect(() => {
+    fadeAnim.value = withTiming(1, { duration: 500 });
+    translateY.value = withTiming(0, { duration: 500 });
+  }, []);
+
+  const animateModeChange = (newMode) => {
+    formOpacity.value = withTiming(0, { duration: 150 }, () => {
+      runOnJS(setMode)(newMode);
+      formTranslateY.value = 20;
+      formOpacity.value = withTiming(1, { duration: 300 });
+      formTranslateY.value = withTiming(0, { duration: 300 });
+    });
+  };
+  
+  
+
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const [name, setName] = useState('');
   const [age, setAge] = useState('');
   const [gender, setGender] = useState('');
@@ -41,11 +86,7 @@ const AuthScreen = ({ navigation }) => {
   const [userProfile, setUserProfile] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn: googleSignIn } = useGoogleSignIn();
-
-  const [passwordVisible, setPasswordVisible] = useState(false);
-
-
+  
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -217,11 +258,101 @@ const AuthScreen = ({ navigation }) => {
     }
   };
   
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: fadeAnim.value,
+    };
+  });
+  const buttonAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: fadeAnim.value,
+    transform: [{ translateY: translateY.value }],
+  }));
   
-
+  const formAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: formOpacity.value,
+    transform: [{ translateY: formTranslateY.value }],
+  }));
+  
+  
+  
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View style={{ flex: 1, backgroundColor: '#f3fefb', justifyContent: 'center', padding: 20 }}>
+      <Animated.View style={[{ flex: 1, backgroundColor: '#e0fae7', justifyContent: 'center', padding: 20 }, animatedStyle]}>
+      {/* Height Picker Modal */}
+      <Modal visible={heightPickerVisible} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Picker
+              selectedValue={selectedHeight}
+              onValueChange={(itemValue) => {
+                setSelectedHeight(itemValue);
+              }}
+              style={{ backgroundColor: '#fff' }}
+              itemStyle={{ color: '#000', fontSize: 18 }}
+              
+            >
+              {heightOptions.map((height) => (
+                <Picker.Item label={height} value={height} key={height} />
+              ))}
+            </Picker>
+            <TouchableOpacity onPress={() => setHeightPickerVisible(false)} style={styles.modalButton}>
+              <Text style={styles.modalButtonText}>Done</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Activity Picker Modal */}
+      <Modal visible={activityPickerVisible} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Picker
+              selectedValue={activityLevel}
+              onValueChange={(itemValue) => {
+                setActivityLevel(itemValue);
+              }}
+              style={{ backgroundColor: '#fff' }}
+              itemStyle={{ color: '#000', fontSize: 18 }}
+            >
+              {activityOptions.map((level) => (
+                <Picker.Item label={level} value={level} key={level} />
+              ))}
+            </Picker>
+            <TouchableOpacity onPress={() => setActivityPickerVisible(false)} style={styles.modalButton}>
+              <Text style={styles.modalButtonText}>Done</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Diet Picker Modal */}
+      <Modal visible={dietPickerVisible} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Picker
+              selectedValue={dietaryPreferences}
+              onValueChange={(itemValue) => {
+                setDietaryPreferences(itemValue);
+              }}
+              style={{ backgroundColor: '#fff' }}
+              itemStyle={{ color: '#000', fontSize: 18 }}
+            >
+              {dietOptions.map((option) => (
+                <Picker.Item label={option} value={option} key={option} />
+              ))}
+            </Picker>
+            <TouchableOpacity onPress={() => setDietPickerVisible(false)} style={styles.modalButton}>
+              <Text style={styles.modalButtonText}>Done</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+
+        <Image
+          source={require('../../images/mealbuddy_icon.png')}
+          style={{ width: 100, height: 100, marginBottom: 20, alignSelf: 'center' }}
+        />
         {loading ? (
           <ActivityIndicator size="large" color={Colors.primary} />
         ) : (
@@ -235,172 +366,199 @@ const AuthScreen = ({ navigation }) => {
               <>
                 {mode === null && (
                   <>
-                      <Text style={{ fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 20, left: 10 }}>
+                      <Text style={{ fontSize: 32, fontWeight: 'bold', textAlign: 'center', marginBottom: 10, color: '#5e2bff' }}>
                         Welcome to MealBuddy!
                       </Text>
-                    {/* Blue Box Sign Up Button */}
-                    <TouchableOpacity onPress={() => { setMode('signup'); resetInputs(); }} style={styles.authButton}>
-                      <Text style={styles.authButtonText}>Sign Up</Text>
-                    </TouchableOpacity>
+                      <Text style={{ fontSize: 19, textAlign: 'center', marginBottom: 30, color: '#5e2bff' }}>
+                        Your Personal Meal Tracker and Planner 🥗
+                      </Text>
 
-                    {/* Blue Box Log In Button */}
-                    <TouchableOpacity onPress={() => { setMode('login'); resetInputs(); }} style={styles.authButtonSecondary}>
-                      <Text style={styles.authButtonText}>Log In</Text>
-                    </TouchableOpacity>
+                      <Animated.View style={buttonAnimatedStyle}>
+                        <TouchableOpacity onPress={() => { animateModeChange('signup'); resetInputs(); }} style={styles.authButton}>
+                          <Text style={styles.authButtonText}>Sign Up</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => { animateModeChange('login');; resetInputs(); }} style={styles.authButtonSecondary}>
+                          <Text style={styles.authButtonText}>Log In</Text>
+                        </TouchableOpacity>
+                      </Animated.View>
+
+
                     
                     
                   </>
                 )}
+                <Animated.View style={formAnimatedStyle}>
+                  {mode === 'signup' && (
+                    <>
 
-                {mode === 'signup' && (
-                  <>
+                    {/* Member Sign Up Title */}
+                      <Text style={{ fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 20, color: '#5e2bff' }}>
+                        Member Sign Up
+                      </Text>
 
-                  {/* Member Sign Up Title */}
-                    <Text style={{ fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 20 }}>
-                      Member Sign Up
-                    </Text>
+                      {error ? <Text style={{ color: 'red' }}>{error}</Text> : null}
+                    {/* Email Input Box */}
+                    <TextInput
+                      placeholder="Enter Email"
+                      value={email}
+                      onChangeText={setEmail}
+                      keyboardType="email-address"
+                      style={{
+                        borderWidth: 1, // Add border
+                        borderColor: '#ccc', // Border color
+                        borderRadius: 8, // Rounded corners
+                        padding: 10, // Padding inside the box
+                        marginBottom: 10, // Space between inputs
+                      }}
+                    />
+                      {/* Password Input Box */}
+                      <View style={{ position: 'relative' }}>
+                        <TextInput
+                          placeholder="Enter Password"
+                          value={password}
+                          onChangeText={setPassword}
+                          secureTextEntry={!passwordVisible}
+                          style={{
+                            borderWidth: 1,
+                            borderColor: '#ccc',
+                            borderRadius: 8,
+                            padding: 10,
+                            marginBottom: 10,
+                          }}
+                        />
+                        
+                        {/* Toggle Visibility Button (Eye Icon) */}
+                        <TouchableOpacity 
+                          onPress={() => setPasswordVisible(!passwordVisible)} 
+                          style={{ position: 'absolute', right: 10, top: 10 }}
+                        >
+                          <Ionicons 
+                            name={passwordVisible ? 'eye-off' : 'eye'} 
+                            size={24} 
+                            color="#000" 
+                          />
+                        </TouchableOpacity>
+                      </View>
 
-                    {error ? <Text style={{ color: 'red' }}>{error}</Text> : null}
-                   {/* Email Input Box */}
-                  <TextInput
-                    placeholder="Enter Email"
-                    value={email}
-                    onChangeText={setEmail}
-                    keyboardType="email-address"
-                    style={{
-                      borderWidth: 1, // Add border
-                      borderColor: '#ccc', // Border color
-                      borderRadius: 8, // Rounded corners
-                      padding: 10, // Padding inside the box
-                      marginBottom: 10, // Space between inputs
-                    }}
-                  />
-                     {/* Password Input Box */}
-                    <View style={{ position: 'relative' }}>
+                      {/* Blue Box Sign Up Button */}
+                        <TouchableOpacity
+                          onPress={handleSignUp}
+                          style={{
+                          // borderWidth: 2,
+                            //borderColor: 'Colors.primary', // Blue border color
+                            backgroundColor: '#5e2bff', // Transparent background
+                            paddingVertical: 15,
+                            paddingHorizontal: 40,
+                            borderRadius: 10, // Rounded corners (optional)
+                            alignItems: 'center',
+                            marginBottom: 20,
+                          }}
+                        >
+                          <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>
+                            Sign Up
+                          </Text>
+                        </TouchableOpacity>
+                      {/* Back to Sign Up Link */}
+                      <TouchableOpacity onPress={() => {animateModeChange('login'); resetInputs();}}>
+                      <Text style={{ color: Colors.primary, textAlign: 'center', marginTop: 10, color: '#5e2bff' }}>Already have an account? Log In</Text>
+                      </TouchableOpacity>
+                        
+                      </>
+                    )}
+                </Animated.View>
+                <Animated.View style={formAnimatedStyle}>
+                  {mode === 'profile' && (
+                    <>
+                      {/* Background Information Title */}
+                        <Text style={{ fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 20, color: '#5e2bff' }}>
+                          Background Information
+                        </Text>
+                      {/* Error Message */}
+                      {error ? (
+                        <Text style={{ color: 'red', marginBottom: 10, textAlign: 'center' }}>
+                          {error}
+                        </Text>
+                      ) : null}
+
+                      {/* Name Input */}
                       <TextInput
-                        placeholder="Enter Password"
-                        value={password}
-                        onChangeText={setPassword}
-                        secureTextEntry={!passwordVisible}
+                        placeholder="Enter Your Name"
+                        value={name}
+                        onChangeText={setName}
                         style={{
+                          backgroundColor: '#fff',
+                          borderRadius: 10,
+                          padding: 12,
+                          marginBottom: 15,
+                          borderColor: '#ddd',
                           borderWidth: 1,
-                          borderColor: '#ccc',
-                          borderRadius: 8,
-                          padding: 10,
-                          marginBottom: 10,
+                          fontSize: 16,
                         }}
                       />
-                      
-                      {/* Toggle Visibility Button (Eye Icon) */}
-                      <TouchableOpacity 
-                        onPress={() => setPasswordVisible(!passwordVisible)} 
-                        style={{ position: 'absolute', right: 10, top: 10 }}
-                      >
-                        <Ionicons 
-                          name={passwordVisible ? 'eye-off' : 'eye'} 
-                          size={24} 
-                          color="#000" 
-                        />
-                      </TouchableOpacity>
-                    </View>
 
-                    {/* Blue Box Sign Up Button */}
-                      <TouchableOpacity
-                        onPress={handleSignUp}
+                      {/* Age Input */}
+                      <TextInput
+                        placeholder="Enter Your Age"
+                        value={age}
+                        onChangeText={setAge}
+                        keyboardType="numeric"
                         style={{
-                         // borderWidth: 2,
-                          //borderColor: 'Colors.primary', // Blue border color
-                          backgroundColor: '#24a0ed', // Transparent background
-                          paddingVertical: 15,
-                          paddingHorizontal: 40,
-                          borderRadius: 10, // Rounded corners (optional)
-                          alignItems: 'center',
+                          backgroundColor: '#fff',
+                          borderRadius: 10,
+                          padding: 12,
                           marginBottom: 20,
+                          borderColor: '#ddd',
+                          borderWidth: 1,
+                          fontSize: 16,
                         }}
-                      >
-                        <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>
-                          Sign Up
-                        </Text>
-                      </TouchableOpacity>
-                    {/* Back to Sign Up Link */}
-                    <TouchableOpacity onPress={() => {setMode('login'); resetInputs();}}>
-                    <Text style={{ color: Colors.primary, textAlign: 'center', marginTop: 10 }}>Already have an account? Log In</Text>
-                    </TouchableOpacity>
-                      
-                    </>
-                  )}
+                      />
 
-                {mode === 'profile' && (
-                  <>
-                    {/* Background Information Title */}
-                      <Text style={{ fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 20 }}>
-                        Background Information
-                      </Text>
-                    {/* Error Message */}
-                    {error ? (
-                      <Text style={{ color: 'red', marginBottom: 10, textAlign: 'center' }}>
-                        {error}
-                      </Text>
-                    ) : null}
+                        {/* Gender Input */}
+                      <TextInput
+                        placeholder="Enter Your Gender"
+                        value={gender}
+                        onChangeText={setGender}
+                        style={{
+                          backgroundColor: '#fff',
+                          borderRadius: 10,
+                          padding: 12,
+                          marginBottom: 15,
+                          borderColor: '#ddd',
+                          borderWidth: 1,
+                          fontSize: 16,
+                        }}
+                      />
 
-                    {/* Name Input */}
-                    <TextInput
-                      placeholder="Enter Your Name"
-                      value={name}
-                      onChangeText={setName}
-                      style={{
-                        backgroundColor: '#fff',
-                        borderRadius: 10,
-                        padding: 12,
-                        marginBottom: 15,
-                        borderColor: '#ddd',
-                        borderWidth: 1,
-                        fontSize: 16,
-                      }}
-                    />
-
-                    {/* Age Input */}
-                    <TextInput
-                      placeholder="Enter Your Age"
-                      value={age}
-                      onChangeText={setAge}
-                      keyboardType="numeric"
-                      style={{
-                        backgroundColor: '#fff',
-                        borderRadius: 10,
-                        padding: 12,
-                        marginBottom: 20,
-                        borderColor: '#ddd',
-                        borderWidth: 1,
-                        fontSize: 16,
-                      }}
-                    />
-
-                      {/* Gender Input */}
-                    <TextInput
-                      placeholder="Enter Your Gender"
-                      value={gender}
-                      onChangeText={setGender}
-                      style={{
-                        backgroundColor: '#fff',
-                        borderRadius: 10,
-                        padding: 12,
-                        marginBottom: 15,
-                        borderColor: '#ddd',
-                        borderWidth: 1,
-                        fontSize: 16,
-                      }}
-                    />
-
-                    {/* Height Input with feet/inches format */}
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 }}>
-                      <View style={{ flex: 1, marginRight: 10 }}>
+                      {/* Height Input with feet/inches format */}
+                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 }}>
+                        <View style={{ flex: 1, marginRight: 10 }}>
                         <Text style={{ fontSize: 14, color: '#555', marginBottom: 5 }}>Height</Text>
+                          <TouchableOpacity
+                            onPress={() => setHeightPickerVisible(true)}
+                            style={{
+                              backgroundColor: '#fff',
+                              borderRadius: 10,
+                              padding: 12,
+                              borderColor: '#ddd',
+                              borderWidth: 1,
+                              fontSize: 16,
+                              marginBottom: 20,
+                            }}
+                          >
+                            <Text>{selectedHeight || 'Select Height (e.g., 5\'11")'}</Text>
+                          </TouchableOpacity>
+
+                        </View>
+                      </View>
+
+                      {/* Weight Input with lbs */}
+                      <View style={{ marginBottom: 20 }}>
+                        <Text style={{ fontSize: 14, color: '#555', marginBottom: 5 }}>Weight (lbs)</Text>
                         <TextInput
-                          placeholder="Feet"
-                          value={height}
-                          onChangeText={setHeight}
-                          keyboardType="numeric" 
+                          placeholder="Enter Your Weight"
+                          value={weight}
+                          onChangeText={setWeight}
+                          keyboardType="numeric"
                           style={{
                             backgroundColor: '#fff',
                             borderRadius: 10,
@@ -411,103 +569,82 @@ const AuthScreen = ({ navigation }) => {
                           }}
                         />
                       </View>
-                    </View>
 
-                    {/* Weight Input with lbs */}
-                    <View style={{ marginBottom: 20 }}>
-                      <Text style={{ fontSize: 14, color: '#555', marginBottom: 5 }}>Weight (lbs)</Text>
-                      <TextInput
-                        placeholder="Enter Your Weight"
-                        value={weight}
-                        onChangeText={setWeight}
-                        keyboardType="numeric"
-                        style={{
-                          backgroundColor: '#fff',
-                          borderRadius: 10,
-                          padding: 12,
-                          borderColor: '#ddd',
-                          borderWidth: 1,
-                          fontSize: 16,
-                        }}
-                      />
-                    </View>
-
-                    {/* Activity Level */}
-                    <View style={{ marginBottom: 20 }}>
-                      <Text style={{ fontSize: 14, color: '#555', marginBottom: 5 }}>Activity Level</Text>
-                      <View style={{ 
-                        backgroundColor: '#fff',
-                        borderRadius: 10,
-                        borderColor: '#ddd',
-                        borderWidth: 1,
-                        overflow: 'hidden'
-                      }}>
-                        <Picker
-                          selectedValue={activityLevel || 'moderate'}
-                          onValueChange={(itemValue) => setActivityLevel(itemValue)}
-                          style={{ height: 50 }}
+                      {/* Activity Level */}
+                      <View style={{ marginBottom: 20 }}>
+                        <Text style={{ fontSize: 14, color: '#555', marginBottom: 5 }}>Activity Level</Text>
+                        <TouchableOpacity
+                          onPress={() => setActivityPickerVisible(true)}
+                          style={{
+                            backgroundColor: '#fff',
+                            borderRadius: 10,
+                            padding: 12,
+                            borderColor: '#ddd',
+                            borderWidth: 1,
+                            fontSize: 16,
+                            marginBottom: 20,
+                          }}
                         >
-                          <Picker.Item label="Sedentary (little or no exercise)" value="sedentary" />
-                          <Picker.Item label="Light (light exercise 1-3 days/week)" value="light" />
-                          <Picker.Item label="Moderate (moderate exercise 3-5 days/week)" value="moderate" />
-                          <Picker.Item label="Active (hard exercise 6-7 days/week)" value="active" />
-                          <Picker.Item label="Very Active (very hard exercise & physical job)" value="very_active" />
-                        </Picker>
+                          <Text>{activityLevel || 'Select Activity Level'}</Text>
+                        </TouchableOpacity>
+
                       </View>
-                    </View>
 
-                    {/* Dietary Preferences */}
-                    <View style={{ marginBottom: 20 }}>
-                      <Text style={{ fontSize: 14, color: '#555', marginBottom: 5 }}>Dietary Preferences (Optional)</Text>
-                      <TextInput
-                        placeholder="e.g., Vegetarian, Vegan, Keto, etc."
-                        value={dietaryPreferences}
-                        onChangeText={setDietaryPreferences}
+                      {/* Dietary Preferences */}
+                      <View style={{ marginBottom: 20 }}>
+                        <Text style={{ fontSize: 14, color: '#555', marginBottom: 5 }}>Dietary Preference</Text>
+                        <TouchableOpacity
+                          onPress={() => setDietPickerVisible(true)}
+                          style={{
+                            backgroundColor: '#fff',
+                            borderRadius: 10,
+                            padding: 12,
+                            borderColor: '#ddd',
+                            borderWidth: 1,
+                            fontSize: 16,
+                            marginBottom: 20,
+                          }}
+                        >
+                          <Text>{dietaryPreferences || 'Select Dietary Preference'}</Text>
+                        </TouchableOpacity>
+
+                      </View>
+
+                      {/* Submit Button */}
+                      <TouchableOpacity
+                        onPress={handleSubmitProfile}
+                        disabled={loading} // Disable button when loading
                         style={{
-                          backgroundColor: '#fff',
-                          borderRadius: 10,
-                          padding: 12,
-                          borderColor: '#ddd',
-                          borderWidth: 1,
-                          fontSize: 16,
+                          backgroundColor: '#5e2bff', // Transparent background
+                          paddingVertical: 15,
+                          paddingHorizontal: 40,
+                          borderRadius: 10, // Rounded corners (optional)
+                          alignItems: 'center',
+                          marginBottom: 20,
                         }}
-                      />
-                    </View>
+                      >
+                        {loading ? (
+                          <ActivityIndicator size="small" color="#fff" />
+                        ) : (
+                          <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>Submit Profile</Text>
+                        )}
+                      </TouchableOpacity>
 
-                    {/* Submit Button */}
-                    <TouchableOpacity
-                      onPress={handleSubmitProfile}
-                      disabled={loading} // Disable button when loading
-                      style={{
-                        backgroundColor: '#24a0ed', // Transparent background
-                        paddingVertical: 15,
-                        paddingHorizontal: 40,
-                        borderRadius: 10, // Rounded corners (optional)
-                        alignItems: 'center',
-                        marginBottom: 20,
-                      }}
-                    >
-                      {loading ? (
-                        <ActivityIndicator size="small" color="#fff" />
-                      ) : (
-                        <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>Submit Profile</Text>
-                      )}
-                    </TouchableOpacity>
+                      {/* Optional: Back Button */}
+                      <TouchableOpacity
+                        onPress={() => { animateModeChange('signup'); resetInputs(); }}
+                        style={{ marginTop: 10, alignItems: 'center' }}
+                      >
+                        <Text style={{ color: '#5e2bff' }}>Back to Sign Up</Text>
+                      </TouchableOpacity>
 
-                    {/* Optional: Back Button */}
-                    <TouchableOpacity
-                      onPress={() => setMode('signup')}
-                      style={{ marginTop: 20, alignItems: 'center' }}
-                    >
-                      <Text style={{ color: Colors.primary }}>Back to Sign Up</Text>
-                    </TouchableOpacity>
-
-                  </>
-                )}
-                
+                    </>
+                  )}
+                </Animated.View>
+                <Animated.View style={formAnimatedStyle}>
                 {mode === 'login' && (
                   <>
-                  <Text style={{ fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 20 }}>
+                  <Text style={{ fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 20, color: '#5e2bff' }}>
                     Member Log In
                   </Text>
 
@@ -555,52 +692,53 @@ const AuthScreen = ({ navigation }) => {
 
                      {/* Forgot Password Link */}
                     <TouchableOpacity onPress={async () => {await handleForgotPassword()}}>
-                      <Text style={{ color: Colors.primary, textAlign: 'left', marginBottom: 10 }}>
+                      <Text style={{ color: '#5e2bff', textAlign: 'left', marginBottom: 10 }}>
                         Forgot Password?
                       </Text>
                     </TouchableOpacity>
 
-      <TouchableOpacity
-        onPress={handleLogIn}
-        style={{
-          backgroundColor: '#24a0ed', // Blue background color
-          paddingVertical: 15,
-          paddingHorizontal: 40,
-          borderRadius: 10, // Rounded corners (optional)
-          alignItems: 'center',
-          marginBottom: 20,
-        }}
-      >
-        <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>
-          Log In
-        </Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        onPress={() => handleGoogleSignIn()}
-        style={{
-          backgroundColor: '#4285F4',
-          paddingVertical: 15,
-          paddingHorizontal: 40,
-          borderRadius: 10,
-          alignItems: 'center',
-          marginBottom: 20,
-        }}
-      >
-        <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>
-          Sign in with Google
-        </Text>
-      </TouchableOpacity>
-      {/* Back to Sign Up Link */}
-      <TouchableOpacity onPress={() => { setMode('signup'); resetInputs(); }}>
-        <Text style={{ color: Colors.primary, textAlign: 'center', marginTop: 10 }}>Don't have an account? Sign Up</Text>
-      </TouchableOpacity>
-                  </>
-                )}
+                    <TouchableOpacity
+                      onPress={handleLogIn}
+                      style={{
+                        backgroundColor:'#5e2bff',
+                        paddingVertical: 15,
+                        paddingHorizontal: 40,
+                        borderRadius: 10, 
+                        alignItems: 'center',
+                        marginBottom: 20,
+                      }}
+                    >
+                      <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>
+                        Log In
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => handleGoogleSignIn()}
+                      style={{
+                        backgroundColor: '#4318D1',
+                        paddingVertical: 15,
+                        paddingHorizontal: 40,
+                        borderRadius: 10,
+                        alignItems: 'center',
+                        marginBottom: 20,
+                      }}
+                    >
+                      <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>
+                        Sign in with Google
+                      </Text>
+                    </TouchableOpacity>
+                    {/* Back to Sign Up Link */}
+                    <TouchableOpacity onPress={() => { animateModeChange('signup'); resetInputs(); }}>
+                      <Text style={{ color: '#5e2bff', textAlign: 'center', marginTop: 10, color: '#5e2bff' }}>Don't have an account? Sign Up</Text>
+                    </TouchableOpacity>
+                                </>
+                              )}
+                </Animated.View>
               </>
             )}
           </>
         )}
-      </View>
+      </Animated.View>
     </TouchableWithoutFeedback>
   );
 };
@@ -632,30 +770,45 @@ const MainTabs = () => (
 
 const styles = StyleSheet.create({
   authButton: {
-    backgroundColor: '#24a0ed',
+    backgroundColor: '#ffffff',
     paddingVertical: 15,
     paddingHorizontal: 40,
-    borderRadius: 10,
+    borderRadius: 12,
     alignItems: 'center',
     marginBottom: 20,
-    width: "40%",
-    left: 120,
+    width: '80%',
+    alignSelf: 'center',
+    borderWidth: 1,
+    borderColor: '#333',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   authButtonSecondary: {
-    backgroundColor: '#24a0ed',
+    backgroundColor: '#ffffff',
     paddingVertical: 15,
     paddingHorizontal: 40,
-    borderRadius: 10,
+    borderRadius: 12,
     alignItems: 'center',
     marginBottom: 20,
-    width: "40%",
-    left: 120,
+    width: '80%',
+    alignSelf: 'center',
+    borderWidth: 1,
+    borderColor: '#333',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   authButtonText: {
-    color: 'white',
+    color: '#5e2bff',
     fontSize: 18,
     fontWeight: 'bold',
   },
+  
 
   googleButton: {
     backgroundColor: '#4285F4',
@@ -667,7 +820,40 @@ const styles = StyleSheet.create({
     width: '55%',
     left: 90,
   },
-
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0,0,0,0.3)',
+  },
+  
+  modalContent: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingTop: 10,
+    paddingBottom: 30,
+    paddingHorizontal: 20,
+  },
+  
+  modalButton: {
+    backgroundColor: '#5e2bff',
+    marginTop: 10,
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  
+  modalButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  pickerStyle: {
+    color: '#000',
+    fontSize: 16,
+  },
+  
+  
 });
 
 
