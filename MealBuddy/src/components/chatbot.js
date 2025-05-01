@@ -1,18 +1,64 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
 import axios from 'axios';
+import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
+import { auth, db } from '../services/firebase_config';
 
 const Chatbot = () => {
   const [input, setInput] = useState('');
   const [response, setResponse] = useState('');
+  const [ingredients, setIngredients] = useState([]);
+
+  useEffect(() => {
+    const userId = auth.currentUser?.uid;
+    if (!userId) return;
+
+    const ingredientsRef = collection(db, "users", userId, "ingredients");
+    const q = query(ingredientsRef, orderBy("name"));
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setIngredients(data);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const handleChat = async () => {
     try {
+      const fridgeList = ingredients.map(item => item.name).join(', ');
       const result = await axios.post(
         'https://api.openai.com/v1/chat/completions',
         {
           model: 'gpt-3.5-turbo',
+<<<<<<< Updated upstream
           messages: [{ role: 'user', content: input }],
+=======
+          messages: [
+            {
+              role: 'system',
+              content: `You are a smart meal planner assistant. When the user gives you a list of ingredients they have in their fridge, reply with:
+                1. Three meal ideas they could make.
+                2. For each meal, include:
+                  - A short, enticing title.
+                  - A one-sentence description.
+                  - A public image URL (if available) to show a visual preview.
+                Only show these previews first.
+
+                If the user selects or types one of the meal names, respond with a full recipe for that meal using only the ingredients they provided. If an ingredient is missing, suggest the simplest substitution or ask if it can be skipped.
+
+                Keep all responses friendly, clear, and concise.`,
+            },
+            {
+              role: 'user',
+              content: `The user's fridge contains: ${fridgeList}`,
+            },
+            {
+              role: 'user',
+              content: input,
+            },
+          ],
+>>>>>>> Stashed changes
         },
         {
           headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
