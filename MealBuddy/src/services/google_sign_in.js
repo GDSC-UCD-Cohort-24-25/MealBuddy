@@ -28,7 +28,7 @@ export const useGoogleSignIn = () => {
     setLoading(true);
     try {
       const result = await promptAsync({ useProxy: true });
-      console.log('Full promptAsync result:', result);  // <-- Add this
+      console.log('Full promptAsync result:', result);  
       if (result.type === 'success') {
         const { id_token } = result.params;
         const credential = GoogleAuthProvider.credential(id_token);
