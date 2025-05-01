@@ -401,35 +401,25 @@ const AuthScreen = ({ navigation }) => {
                       </Text>
 
                       {error ? <Text style={{ color: 'red' }}>{error}</Text> : null}
-                    {/* Email Input Box */}
-                    <TextInput
-                      placeholder="Enter Email"
-                      value={email}
-                      onChangeText={setEmail}
-                      keyboardType="email-address"
-                      style={{
-                        borderWidth: 1, // Add border
-                        borderColor: '#ccc', // Border color
-                        borderRadius: 8, // Rounded corners
-                        padding: 10, // Padding inside the box
-                        marginBottom: 10, // Space between inputs
-                      }}
-                    />
+                      {/* Email Input Box */}
+                      <TextInput
+                        placeholder="Enter Email"
+                        value={email}
+                        onChangeText={setEmail}
+                        keyboardType="email-address"
+                        style={styles.inputBox}
+                      />
+
                       {/* Password Input Box */}
                       <View style={{ position: 'relative' }}>
-                        <TextInput
-                          placeholder="Enter Password"
-                          value={password}
-                          onChangeText={setPassword}
-                          secureTextEntry={!passwordVisible}
-                          style={{
-                            borderWidth: 1,
-                            borderColor: '#ccc',
-                            borderRadius: 8,
-                            padding: 10,
-                            marginBottom: 10,
-                          }}
-                        />
+                      <TextInput
+                        placeholder="Enter Password"
+                        value={password}
+                        onChangeText={setPassword}
+                        secureTextEntry={!passwordVisible}
+                        style={styles.inputBox}
+                      />
+
                         
                         {/* Toggle Visibility Button (Eye Icon) */}
                         <TouchableOpacity 
@@ -485,6 +475,7 @@ const AuthScreen = ({ navigation }) => {
                       ) : null}
 
                       {/* Name Input */}
+                      <Text style={{ fontSize: 14, color: '#555', marginBottom: 5 }}>Name</Text>
                       <TextInput
                         placeholder="Enter Your Name"
                         value={name}
@@ -501,6 +492,7 @@ const AuthScreen = ({ navigation }) => {
                       />
 
                       {/* Age Input */}
+                      <Text style={{ fontSize: 14, color: '#555', marginBottom: 5 }}>Age</Text>
                       <TextInput
                         placeholder="Enter Your Age"
                         value={age}
@@ -518,6 +510,7 @@ const AuthScreen = ({ navigation }) => {
                       />
 
                         {/* Gender Input */}
+                      <Text style={{ fontSize: 14, color: '#555', marginBottom: 5 }}>Gender</Text>
                       <TextInput
                         placeholder="Enter Your Gender"
                         value={gender}
@@ -654,19 +647,14 @@ const AuthScreen = ({ navigation }) => {
 
                     {error ? <Text style={{ color: 'red' }}>{error}</Text> : null}
                    {/* Email Input Box */}
-                  <TextInput
+                   <TextInput
                     placeholder="Enter Email"
                     value={email}
                     onChangeText={setEmail}
                     keyboardType="email-address"
-                    style={{
-                      borderWidth: 1, // Add border
-                      borderColor: '#ccc', // Border color
-                      borderRadius: 8, // Rounded corners
-                      padding: 10, // Padding inside the box
-                      marginBottom: 10, // Space between inputs
-                    }}
+                    style={styles.inputBox}
                   />
+
                   
                   {/* Password Input Box */}
                   <TextInput
@@ -674,14 +662,9 @@ const AuthScreen = ({ navigation }) => {
                     value={password}
                     onChangeText={setPassword}
                     secureTextEntry={!passwordVisible}
-                    style={{
-                      borderWidth: 1, // Add border
-                      borderColor: '#ccc', // Border color
-                      borderRadius: 8, // Rounded corners
-                      padding: 10, // Padding inside the box
-                      marginBottom: 10, // Space between inputs
-                    }}
+                    style={styles.inputBox}
                   />
+
                   
                   {/* Toggle Visibility Button (Eye Icon) */}
                     <TouchableOpacity onPress={() => setPasswordVisible(!passwordVisible)}>
@@ -689,7 +672,7 @@ const AuthScreen = ({ navigation }) => {
                         name={passwordVisible ? 'eye-off' : 'eye'} 
                         size={24} 
                         color="#000" 
-                        style={{ position: 'absolute', right: 10, top: -40 }} // Positioning the eye icon inside the text input box
+                        style={{ position: 'absolute', right: 10, top: -50 }} // Positioning the eye icon inside the text input box
                       />
                     </TouchableOpacity>
 
@@ -752,13 +735,13 @@ const MainTabs = () => (
     screenOptions={({ route }) => ({
       tabBarIcon: ({ color, size }) => {
         let iconName;
-        if (route.name === 'Dashboard') iconName = 'home-outline';
+        if (route.name === 'Dashboard') iconName = 'home-outline' ;
         else if (route.name === 'Your Fridge') iconName = 'basket-outline';
         else if (route.name === 'Add') iconName = 'add-circle-outline';
         else if (route.name === 'Chatbot') iconName = 'chatbubble-ellipses-outline';
         else if (route.name === 'Profile') iconName = 'person-outline';
 
-        return <Ionicons name={iconName} size={size} color={color} />;
+        return <Ionicons name={iconName} size={size} color={"#5e2bff"} />;
       },
       tabBarActiveTintColor: Colors.tabBarActive,
       tabBarInactiveTintColor: Colors.tabBarInactive,
@@ -855,6 +838,17 @@ const styles = StyleSheet.create({
   pickerStyle: {
     color: '#000',
     fontSize: 16,
+  },
+  
+  inputBox: {
+    backgroundColor: '#f8f8f8',
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 15,
+    fontSize: 16,
+    marginBottom: 15,
   },
   
   

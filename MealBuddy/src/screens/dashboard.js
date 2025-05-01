@@ -1,15 +1,69 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView } from 'react-native';
+import { View, Text, ScrollView, Image, ImageBackground, TouchableOpacity } from 'react-native';
 import CircularTracker from '../components/circular_tracker';
 import styles from '../styles/dashboard_styles';
 import Colors from '../constants/Colors';
 import { PieChart, BarChart } from 'react-native-chart-kit';
 import { db, auth } from '../services/firebase_config';
-import { collection, onSnapshot } from 'firebase/firestore';
+import { collection, onSnapshot, doc, getDoc } from 'firebase/firestore';
+import Animated, {
+  useAnimatedScrollHandler,
+  useSharedValue,
+  useAnimatedStyle,
+  interpolate
+} from 'react-native-reanimated';
+
+
+
+
+
+
+
 
 const roundToOneDecimal = (value) => Math.round(value * 10) / 10;
 
+
+
 const Dashboard = () => {
+  const scrollY = useSharedValue(0);
+
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y;
+    },
+  });
+
+  const greetingAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: interpolate(scrollY.value, [0, 100], [1, 0]),
+      transform: [{ translateY: interpolate(scrollY.value, [0, 100], [0, -50]) }],
+    };
+  });
+  
+
+  const [mealCount, setMealCount] = useState(0);
+  const [firstName, setFirstName] = useState('');
+  const [currentDate, setCurrentDate] = useState('');
+
+  useEffect(() => {
+    const today = new Date();
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    setCurrentDate(today.toLocaleDateString('en-US', options));
+
+    if (auth.currentUser) {
+      const userId = auth.currentUser.uid;
+      const userRef = doc(db, 'users', userId);
+      getDoc(userRef).then((docSnap) => {
+        if (docSnap.exists()) {
+          const fullName = docSnap.data().name || '';
+          const first = fullName.split(' ')[0];
+          setFirstName(first);
+        }
+      });
+    }
+  }, []);
+
+
   const [totals, setTotals] = useState({
     calories: 0,
     protein: 0,
@@ -31,6 +85,7 @@ const Dashboard = () => {
     const safeValue = (value) => (isNaN(value) || value === null ? 0 : value);
 
     const unsubscribe = onSnapshot(ingredientsRef, (snapshot) => {
+      setMealCount(snapshot.size);
       let newTotals = {
         calories: 0,
         protein: 0,
@@ -112,7 +167,44 @@ const Dashboard = () => {
   ];
 
   return (
-    <ScrollView style={styles.container}>
+  <ImageBackground
+    source={require('../../images/background.png')}
+    resizeMode="cover"
+    style={styles.background}
+    imageStyle={{ opacity: 0.30 }}
+  >
+    <Animated.ScrollView
+      contentContainerStyle={styles.scrollContent}
+      onScroll={scrollHandler}
+      scrollEventThrottle={16}
+    >
+
+      <Animated.View style={[styles.greetingContainer, greetingAnimatedStyle]}>
+        <Text style={styles.greetingText}>Good Morning, {firstName}! 👋</Text>
+        <Text style={styles.dateText}>{currentDate}</Text>
+        <Text style={styles.loggedText}>Meals logged today: {mealCount}</Text>
+      </Animated.View>
+
+
+      <View style={styles.mealOfDayCard}>
+        <View style={styles.mealOfDayHeader}>
+          <Text style={styles.mealOfDayTitle}>Meals of the Day</Text>
+          <TouchableOpacity style={styles.logMealButton}>
+            <Text style={styles.logMealButtonText}>+ Log Meal</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.mealCardBody}>
+          <View style={styles.placeholderBox} />
+          <Text style={styles.mealCardTitle}>Quinoa Buddha Bowl</Text>
+        </View>
+
+        <TouchableOpacity>
+          <Text style={styles.viewAllText}>See all meals →</Text>
+        </TouchableOpacity>
+      </View>
+
+
       <Text style={styles.title}>Nutrition Summary</Text>
 
       <View style={styles.largeTrackerRow}>
@@ -280,7 +372,8 @@ const Dashboard = () => {
           </View>
         ))}
       </View>
-    </ScrollView>
+    </Animated.ScrollView>
+  </ImageBackground>
   );
 };
 
