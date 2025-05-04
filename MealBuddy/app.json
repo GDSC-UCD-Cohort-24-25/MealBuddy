@@ -5,8 +5,13 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
-    "scheme": "com.mealbuddy.app",   
-    "platforms": ["ios", "android", "web"],
+    "scheme": "com.mealbuddy.app",
+    "entryPoint": "./App.js",
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
     "updates": {
       "fallbackToCacheTimeout": 0
     },
@@ -30,6 +35,7 @@
       "eas": {
         "projectId": "96d1a77f-fa21-45fa-885d-d75842cbfb0c"
       }
-    }
+    },
+    "owner": "calvinhoang203"
   }
 }

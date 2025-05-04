@@ -3,6 +3,9 @@
 2. Expo CLI - Install globally using:
    npm install -g expo-cli
 
+3. Doctor Check - Diagnose common setup issues with:
+   npx expo-doctor
+
 # Project Dependencies (Run in Project Directory)
 1. Install all project dependencies:
    npm install
@@ -16,7 +19,7 @@
 4. React Native Dotenv - For environment variable management:
    npm install react-native-dotenv
 
-5. Axios - For API requests (e.g., OpenAI):
+5. Axios - For API requests (e.g., Gemini, YouTube):
    npm install axios
 
 6. React Native Image Picker - For uploading images (e.g., grocery receipts):
@@ -30,5 +33,51 @@
 
 # Environment File Setup
 1. Create a `.env` file in the project root and add the following keys:
-   OPENAI_API_KEY=YOUR_OPENAI_API_KEY
-   # Add any other necessary keys here (e.g., Firebase keys)
+
+# Gemini API Key
+GOOGLE_GEMINI_API_KEY=AIzaSyCzHt7ZYk3RZe-hY6FNK-2FPLolb5ePuQQ
+
+# YouTube API Key
+YOUTUBE_API_KEY=AIzaSyDind7FuKJUKE98SjyljlCHHu2kwEB9BbQ
+
+# Google OAuth Client IDs
+EXPO_CLIENT_ID=974021695554-6i0fks9hhoqu07nint2j3mph2toor4un.apps.googleusercontent.com
+IOS_CLIENT_ID=974021695554-6iojii9ti89smt5l9sqc447kk5rgqi5i.apps.googleusercontent.com
+ANDROID_CLIENT_ID=YOUR_ANDROID_CLIENT_ID.apps.googleusercontent.com
+
+# Firebase Configuration
+FIREBASE_API_KEY=AIzaSyDZmtzwub0J0LLmknD3IL57zP2nXnacopA
+FIREBASE_AUTH_DOMAIN=mealbuddy-8590f.firebaseapp.com
+FIREBASE_PROJECT_ID=mealbuddy-8590f
+FIREBASE_STORAGE_BUCKET=mealbuddy-8590f.appspot.com
+FIREBASE_MESSAGING_SENDER_ID=974021695554
+FIREBASE_APP_ID=1:974021695554:ios:42b9c9653db587bf8b75db
+
+# 🛠️ Common Issue: "NavigationContainer nested" error on login
+This happens when multiple <NavigationContainer> components are used.
+
+✅ Solution:
+- Ensure **only one NavigationContainer** exists — typically in `AppNavigator.js`.
+- In files like `tab_navigator.js`, **export the navigator directly** without wrapping it in a `NavigationContainer`.
+
+❌ Avoid this:
+export default () => (
+  <NavigationContainer>
+    <Tab.Navigator>...</Tab.Navigator>
+  </NavigationContainer>
+);
+
+✅ Do this instead:
+const Tab = createBottomTabNavigator();
+const MainTabs = () => (
+  <Tab.Navigator>...</Tab.Navigator>
+);
+export default MainTabs;
+
+# Optional: metro.config.js workaround (if needed)
+To avoid `.cjs` resolution errors in some systems using Expo Go:
+const { getDefaultConfig } = require('expo/metro-config');
+const defaultConfig = getDefaultConfig(__dirname);
+defaultConfig.resolver.sourceExts.push('cjs');
+defaultConfig.resolver.unstable_enablePackageExports = false;
+module.exports = defaultConfig;
