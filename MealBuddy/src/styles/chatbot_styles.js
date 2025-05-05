@@ -2,10 +2,15 @@ import { StyleSheet } from 'react-native';
 import Colors from '../constants/Colors';
 
 export default StyleSheet.create({
+  background: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: Colors.background,
   },
   messageList: {
     flex: 1,
@@ -50,6 +55,7 @@ export default StyleSheet.create({
     borderTopWidth: 1,
     borderColor: '#ccc',
     paddingTop: 8,
+    paddingBottom: 19,
   },
   input: {
     flex: 1,
@@ -62,7 +68,7 @@ export default StyleSheet.create({
   },
   sendButton: {
     marginLeft: 10,
-    backgroundColor: Colors.primary,
+    backgroundColor: '#5e2bff',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 8,
@@ -74,7 +80,7 @@ export default StyleSheet.create({
   },
 
   resetButton: {
-    paddingHorizontal: 8, 
+    paddingHorizontal: 8,
   },
 
   shorterInput: {
@@ -93,6 +99,7 @@ export default StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  
   
 
 });

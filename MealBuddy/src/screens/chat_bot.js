@@ -9,7 +9,9 @@ import {
   KeyboardAvoidingView, 
   Platform,
   Linking,
-  ScrollView
+  ScrollView,
+  Image,
+  ImageBackground
 } from 'react-native';
 import styles from '../styles/chatbot_styles';
 import { GoogleGenerativeAI } from "@google/generative-ai";
@@ -237,38 +239,49 @@ Separate each recipe with a line containing only "---".`;
   };
 
   return (
-    <KeyboardAvoidingView 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
-      style={styles.container}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 50} 
+    <ImageBackground
+    source={require('../../images/background.png')}
+    resizeMode="cover"
+    style={styles.background}
+    imageStyle={{ opacity: 0.3 }}
     >
-      <ScrollView
-        ref={scrollViewRef}
-        contentContainerStyle={styles.messageListContent}
-        onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+        style={styles.container}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 50} 
       >
-        {messages.map(message => renderMessage(message))}
-      </ScrollView>
-      {loading && <ActivityIndicator size="large" color="#007bff" />}
+      
+        <ScrollView
+          ref={scrollViewRef}
+          contentContainerStyle={styles.messageListContent}
+          onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+        >
+          
+          {messages.map(message => renderMessage(message))}
+        </ScrollView>
+        {loading && <ActivityIndicator size="large" color="#007bff" />}
 
-      {/* Reset Chat Button */}
-      <TouchableOpacity style={styles.resetButton} onPress={resetChatbot}>
-        <Ionicons name="refresh-circle" size={36} color="#007bff" />
-      </TouchableOpacity>
-
-      <View style={styles.inputContainer}>
-        <TextInput
-          placeholder="Ask me anything about cooking..."
-          value={input}
-          onChangeText={setInput}
-          style={styles.input}
-          returnKeyType="send"
-        />
-        <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
-          <Text style={styles.sendButtonText}>Send</Text>
+        {/* Reset Chat Button */}
+        <TouchableOpacity style={styles.resetButton} onPress={resetChatbot}>
+          <Ionicons name="refresh-circle" size={36} color="#5e2bff" />
         </TouchableOpacity>
-      </View>
-    </KeyboardAvoidingView>
+
+        <View style={styles.inputContainer}>
+          
+          <TextInput
+            placeholder="Ask me anything about cooking..."
+            value={input}
+            onChangeText={setInput}
+            style={styles.input}
+            returnKeyType="send"
+          />
+          <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
+            <Text style={styles.sendButtonText}>Send</Text>
+          </TouchableOpacity>
+          
+        </View>
+      </KeyboardAvoidingView>
+    </ImageBackground>
   );
 };
 
