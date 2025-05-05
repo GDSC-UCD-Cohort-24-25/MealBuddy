@@ -4,6 +4,7 @@
     "slug": "mealbuddy",
     "version": "1.0.0",
     "orientation": "portrait",
+    "icon": "./images/mealbuddy_icon.png",
     "userInterfaceStyle": "light",
     "scheme": "com.mealbuddy.app",
     "entryPoint": "./App.js",
