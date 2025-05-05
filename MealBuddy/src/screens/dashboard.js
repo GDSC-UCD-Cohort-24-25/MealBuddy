@@ -13,13 +13,6 @@ import Animated, {
   interpolate
 } from 'react-native-reanimated';
 
-
-
-
-
-
-
-
 const roundToOneDecimal = (value) => Math.round(value * 10) / 10;
 
 
