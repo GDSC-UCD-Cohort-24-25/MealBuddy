@@ -188,7 +188,7 @@ const Dashboard = () => {
   
   // Hook to handle the "Ask MealBuddy" CTA
   const handleAskMealBuddy = () => {
-    navigation.navigate('Chatbot'); // Updated to match the correct screen name
+    navigation.navigate('Chatbot'); // Navigate to the Chatbot screen
   };
 
   return (
@@ -261,7 +261,7 @@ const Dashboard = () => {
                   value={totals.calories} 
                   maxValue={2000} 
                   color={Colors.calories} 
-                  size={140} 
+                  size={160} // Increased size
                   unit="kcal"
                 />
               </Animated.View>
@@ -271,7 +271,7 @@ const Dashboard = () => {
                   value={totals.water} 
                   maxValue={100} 
                   color={Colors.water} 
-                  size={140} 
+                  size={160} // Increased size
                   unit="oz"
                 />
               </Animated.View>
@@ -284,7 +284,7 @@ const Dashboard = () => {
                   value={totals.protein} 
                   maxValue={100} 
                   color={Colors.protein} 
-                  size={90} 
+                  size={120} // Increased size for small trackers
                   unit="g"
                 />
               </Animated.View>
@@ -294,7 +294,7 @@ const Dashboard = () => {
                   value={totals.sugar} 
                   maxValue={50} 
                   color={Colors.carbs} 
-                  size={90} 
+                  size={120} // Increased size for small trackers
                   unit="g"
                 />
               </Animated.View>
@@ -304,7 +304,7 @@ const Dashboard = () => {
                   value={totals.fats} 
                   maxValue={70} 
                   color={Colors.fats} 
-                  size={90} 
+                  size={120} // Increased size for small trackers
                   unit="g"
                 />
               </Animated.View>
@@ -313,9 +313,9 @@ const Dashboard = () => {
         </AnimatedCard>
         
         {/* Suggested Recipes Section */}
-        <AnimatedCard index={2} style={{marginBottom: 15}}>
-          <View style={styles.cardHeader}>
-            <Text style={styles.cardTitle}>Suggested Recipes</Text>
+        <AnimatedCard index={2} style={styles.recipesSectionContainer}>
+          <View style={styles.recipesSectionHeader}>
+            <Text style={styles.recipesSectionTitle}>Suggested Recipes</Text>
           </View>
           
           <Animated.ScrollView 
@@ -345,6 +345,20 @@ const Dashboard = () => {
               <View style={styles.recipeImage} />
               <View style={styles.recipeContent}>
                 <Text style={styles.recipeTitle}>Mediterranean Salad</Text>
+                <TouchableOpacity style={styles.recipeButton}>
+                  <Text style={styles.recipeButtonText}>View Recipe</Text>
+                </TouchableOpacity>
+              </View>
+            </Animated.View>
+            
+            {/* Recipe Card 3 */}
+            <Animated.View 
+              entering={SlideInRight.delay(400).springify()}
+              style={styles.recipeCard}
+            >
+              <View style={styles.recipeImage} />
+              <View style={styles.recipeContent}>
+                <Text style={styles.recipeTitle}>Avocado Toast</Text>
                 <TouchableOpacity style={styles.recipeButton}>
                   <Text style={styles.recipeButtonText}>View Recipe</Text>
                 </TouchableOpacity>

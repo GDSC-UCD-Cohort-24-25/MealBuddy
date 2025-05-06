@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { View, Text } from 'react-native';
-import { Svg, Circle, LinearGradient, Defs, Stop } from 'react-native-svg';
+import { Svg, Circle, Path } from 'react-native-svg';
 import styles from '../styles/circular_tracker_styles';
 import Animated, {
   useSharedValue,
@@ -8,10 +8,8 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
   withSequence,
-  withDelay,
   Easing,
-  FadeIn,
-  interpolateColor
+  FadeIn
 } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -19,10 +17,9 @@ import { Ionicons } from '@expo/vector-icons';
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 const CircularTracker = ({ label, value, maxValue, color, size, unit = '' }) => {
-  // Calculate dimensions
-  const radius = size / 2 - 12; // Slightly smaller for better visual
-  const innerRadius = radius - 5; // Inner circle for layered effect
-  const strokeWidth = 8;
+  // Calculate dimensions - match the style in the image
+  const radius = size / 2 - 12; // Slightly larger radius to make the circle bigger
+  const strokeWidth = 12; // Slightly thicker stroke to match the image better
   const circumference = 2 * Math.PI * radius;
   
   // For pulse animation of the value
@@ -31,19 +28,7 @@ const CircularTracker = ({ label, value, maxValue, color, size, unit = '' }) => 
   
   // Progress animation
   const progress = useSharedValue(0);
-  const percentage = (value / maxValue) * 100;
-  
-  // Calculate darker/lighter versions of the color for gradient
-  const darkerColor = color; // Original color
-  const lighterColor = color + '80'; // Add transparency
-  
-  // Calculate color based on percentage (green to red) for extra visual feedback
-  const getHealthColor = (percent) => {
-    if (percent > 85) return '#e74c3c'; // Red for high
-    if (percent > 65) return '#f39c12'; // Orange for medium-high
-    if (percent > 45) return '#2ecc71'; // Green for medium
-    return '#3498db'; // Blue for low
-  };
+  const percentage = Math.min(100, Math.max(0, (value / maxValue) * 100));
   
   // Animated styles for the value text
   const valueAnimatedStyle = useAnimatedStyle(() => {
@@ -59,18 +44,18 @@ const CircularTracker = ({ label, value, maxValue, color, size, unit = '' }) => 
     progress.value = withTiming(
       (value / maxValue) * circumference,
       { 
-        duration: 1500, 
-        easing: Easing.bezierFn(0.16, 1, 0.3, 1) // Custom bezier curve for smoother animation
+        duration: 1200, 
+        easing: Easing.out(Easing.cubic)
       }
     );
     
     // Animate value with a subtle pulse and fade-in
     valueScale.value = withSequence(
-      withTiming(1.15, { duration: 300 }),
+      withTiming(1.1, { duration: 300 }),
       withTiming(1, { duration: 300 })
     );
     
-    valueOpacity.value = withTiming(1, { duration: 600 });
+    valueOpacity.value = withTiming(1, { duration: 500 });
   }, [value, maxValue, circumference]);
   
   // Animated props for the progress circle
@@ -81,22 +66,21 @@ const CircularTracker = ({ label, value, maxValue, color, size, unit = '' }) => 
   });
 
   // Format the value based on its type
-  const formattedValue = parseInt(value) === value ? value : value.toFixed(1);
+  const formattedValue = Number.isInteger(value) ? value : value.toFixed(1);
   
   // Create a visual icon based on the nutrient type
   const getNutrientIcon = () => {
     switch (label.toLowerCase()) {
       case 'calories':
-        return <Ionicons name="flame" size={14} color={color} />;
+        return <Ionicons name="flame" size={16} color={color} />;
       case 'water':
-      case 'water (oz)':
-        return <Ionicons name="water" size={14} color={color} />;
+        return <Ionicons name="water" size={16} color={color} />;
       case 'protein':
-        return <Ionicons name="fitness" size={14} color={color} />;
+        return <Ionicons name="fitness" size={16} color={color} />;
       case 'sugar':
-        return <Ionicons name="nutrition" size={14} color={color} />;
+        return <Ionicons name="nutrition" size={16} color={color} />;
       case 'fats':
-        return <Ionicons name="restaurant" size={14} color={color} />;
+        return <Ionicons name="restaurant" size={16} color={color} />;
       default:
         return null;
     }
@@ -107,52 +91,49 @@ const CircularTracker = ({ label, value, maxValue, color, size, unit = '' }) => 
       style={[styles.container, { width: size, height: size }]}
       entering={FadeIn.duration(500)}
     >
-      <Svg width={size} height={size}>
-        <Defs>
-          <LinearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
-            <Stop offset="0" stopColor={lighterColor} stopOpacity="0.8" />
-            <Stop offset="1" stopColor={darkerColor} stopOpacity="1" />
-          </LinearGradient>
-        </Defs>
-        
-        {/* Background Circle - Light Gray with soft shadow */}
-        <Circle 
-          cx={size / 2} 
-          cy={size / 2} 
-          r={radius} 
-          stroke="#e0e0e0" 
-          strokeWidth={strokeWidth} 
-          strokeOpacity={0.6}
-          fill="none" 
-        />
-        
-        {/* Inner Background Circle for layered effect */}
-        <Circle 
-          cx={size / 2} 
-          cy={size / 2} 
-          r={innerRadius} 
-          stroke="#f0f0f0" 
-          strokeWidth={strokeWidth - 3} 
-          fill="none" 
-        />
-        
-        {/* Animated Progress Circle with Gradient */}
-        <AnimatedCircle
-          cx={size / 2} 
-          cy={size / 2} 
-          r={radius}
-          stroke="url(#grad)" 
-          strokeWidth={strokeWidth} 
-          fill="none"
-          strokeDasharray={circumference} 
-          animatedProps={animatedProps}
-          strokeLinecap="round"
-        />
-      </Svg>
+      <View style={styles.circleBackground}>
+        <Svg width={size} height={size}>
+          {/* Background Circle - White with border */}
+          <Circle 
+            cx={size / 2} 
+            cy={size / 2} 
+            r={radius + strokeWidth/2} 
+            fill="white" 
+            stroke="#F0F0F0"
+            strokeWidth={1}
+          />
+          
+          {/* Background Circle - Track */}
+          <Circle 
+            cx={size / 2} 
+            cy={size / 2} 
+            r={radius} 
+            stroke="#F0F0F0" 
+            strokeWidth={strokeWidth} 
+            fill="none" 
+          />
+          
+          {/* Animated Progress Circle */}
+          <AnimatedCircle
+            cx={size / 2} 
+            cy={size / 2} 
+            r={radius}
+            stroke={color} 
+            strokeWidth={strokeWidth} 
+            fill="none"
+            strokeDasharray={circumference} 
+            animatedProps={animatedProps}
+            strokeLinecap="round"
+          />
+        </Svg>
+      </View>
       
-      {/* Text Container with Value and Label */}
+      {/* Text Container with Value, Label and Percentage */}
       <View style={styles.textContainer}>
-        <Animated.View style={valueAnimatedStyle}>
+        {/* Top Value */}
+        <Animated.View 
+          style={[valueAnimatedStyle, {position: 'absolute', top: size > 100 ? '18%' : '12%'}]}
+        >
           <View style={styles.valueContainer}>
             <Animated.Text 
               style={styles.valueText}
@@ -164,20 +145,21 @@ const CircularTracker = ({ label, value, maxValue, color, size, unit = '' }) => 
           </View>
         </Animated.View>
         
-        <View style={styles.labelContainer}>
+        {/* Center Label with Icon */}
+        <View style={[styles.labelContainer, {top: '50%', transform: [{translateY: -10}]}]}>
           {getNutrientIcon()}
           <Animated.Text 
-            entering={FadeIn.delay(400).duration(300)}
+            entering={FadeIn.delay(300).duration(300)}
             style={[styles.labelText, { color }]}
           >
             {label}
           </Animated.Text>
         </View>
         
-        {/* Percentage indicator */}
+        {/* Bottom Percentage */}
         <Animated.Text 
-          entering={FadeIn.delay(500).duration(300)}
-          style={styles.percentText}
+          entering={FadeIn.delay(400).duration(300)}
+          style={[styles.percentText, {position: 'absolute', bottom: size > 100 ? '20%' : '15%'}]}
         >
           {Math.round(percentage)}%
         </Animated.Text>

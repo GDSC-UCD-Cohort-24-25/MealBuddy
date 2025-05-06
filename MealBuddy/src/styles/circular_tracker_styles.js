@@ -21,23 +21,26 @@ export default StyleSheet.create({
   container: {
     alignItems: 'center',
     justifyContent: 'center',
-    margin: SPACING.sm,
-    // Add a subtle shadow to the whole container
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 1,
+    margin: SPACING.xs, // Reduced margin to fit better in the container
+  },
+  
+  // Circle background with white fill
+  circleBackground: {
+    backgroundColor: 'transparent',
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   
   // Text container for value and label
   textContainer: {
     position: 'absolute',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     width: '100%',
     height: '100%',
-    paddingVertical: SPACING.sm,
   },
   
   // Value display
@@ -47,14 +50,16 @@ export default StyleSheet.create({
     justifyContent: 'center',
   },
   valueText: {
-    fontSize: FONT_SIZE.xlarge,
+    fontSize: 22, // Adjusted to match the image better
     fontWeight: 'bold',
-    textAlign: 'center', 
+    textAlign: 'center',
+    color: '#333',
   },
   unitText: {
-    fontSize: FONT_SIZE.small,
+    fontSize: 10, // Smaller unit text
     marginLeft: 2,
     color: '#888',
+    fontWeight: '500',
   },
   
   // Label display with icon
@@ -62,32 +67,20 @@ export default StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: -SPACING.xs,
+    position: 'absolute',
   },
   labelText: {
-    fontSize: FONT_SIZE.small,
+    fontSize: 14, // Slightly smaller font for label
     fontWeight: '600',
     marginLeft: SPACING.xs / 2,
+    color: '#333',
   },
   
   // Percentage indicator
   percentText: {
-    fontSize: FONT_SIZE.small,
+    fontSize: 12, // Smaller percentage text
     color: '#888',
     fontWeight: '500',
-  },
-  
-  // Animation styles
-  progressCircleContainer: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  gradientContainer: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
+    position: 'absolute'
   },
 });
