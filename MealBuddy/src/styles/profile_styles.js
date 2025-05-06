@@ -79,18 +79,33 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   profileImageContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: Colors.progressBarBackground,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#f0f0f0',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 10,
+    overflow: 'hidden',
+    marginBottom: 15,
+    borderWidth: 2,
+    borderColor: '#ddd',
   },
   profileInitial: {
     fontSize: 40,
     fontWeight: 'bold',
     color: Colors.text,
+  },
+  profileImage: {
+    width: '100%',
+    height: '100%',
+  },
+  uploadIndicator: {
+    position: 'absolute',
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   card: {
     backgroundColor: '#fff',
@@ -154,11 +169,6 @@ const styles = StyleSheet.create({
   infoValue: {
     fontSize: 16,
     color: Colors.secondary,
-  },
-  profileImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
   },
 });
 

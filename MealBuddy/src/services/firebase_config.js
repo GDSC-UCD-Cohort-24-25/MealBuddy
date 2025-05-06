@@ -44,10 +44,11 @@ console.error = (...args) => {
     .join(' ');
   // Suppress Firestore permission-denied errors in snapshot listeners
   if (
-    combinedMessage.includes('Firestore (11.2.0): Uncaught Error in snapshot listener: FirebaseError: [code=permission-denied]')
+    combinedMessage.includes('[code=permission-denied]: Missing or insufficient permissions')
   ) {
     return;
   }
+  
   // Also suppress common auth errors.
   if (
     args.some(arg =>
@@ -66,5 +67,5 @@ console.error = (...args) => {
 
 // Use LogBox to ignore the specific Firestore permission-denied error log.
 LogBox.ignoreLogs([
-  '@firebase/firestore: Firestore (11.2.0): Uncaught Error in snapshot listener: FirebaseError: [code=permission-denied]: Missing or insufficient permissions.'
+  /permission-denied.*Missing or insufficient permissions/
 ]);
