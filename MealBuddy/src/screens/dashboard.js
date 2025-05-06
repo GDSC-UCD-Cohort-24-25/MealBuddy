@@ -1,19 +1,38 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, Image, ImageBackground, TouchableOpacity } from 'react-native';
+import { View, Text, Image, ImageBackground, TouchableOpacity, useWindowDimensions } from 'react-native';
 import CircularTracker from '../components/circular_tracker';
 import styles from '../styles/dashboard_styles';
 import Colors from '../constants/Colors';
-import { PieChart, BarChart } from 'react-native-chart-kit';
+import { Ionicons } from '@expo/vector-icons';
 import { db, auth } from '../services/firebase_config';
 import { collection, onSnapshot, doc, getDoc } from 'firebase/firestore';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Animated, {
   useAnimatedScrollHandler,
   useSharedValue,
   useAnimatedStyle,
-  interpolate
+  interpolate,
+  withTiming,
+  withSpring,
+  FadeIn,
+  FadeOut,
+  SlideInUp,
+  SlideInRight
 } from 'react-native-reanimated';
 
 const roundToOneDecimal = (value) => Math.round(value * 10) / 10;
+
+// Animated components
+const AnimatedCard = ({ index, children, style }) => {
+  return (
+    <Animated.View 
+      entering={SlideInUp.delay(index * 150).springify()} 
+      style={[style]}
+    >
+      {children}
+    </Animated.View>
+  );
+};
 
 
 
@@ -159,194 +178,219 @@ const Dashboard = () => {
     },
   ];
 
+  const navigation = useNavigation();
+  
+  // Animation for screen entrance when focused
+  React.useEffect(() => {
+    // This will run once when the component mounts
+    scrollY.value = 0; // Reset scroll position on screen focus
+  }, []);
+  
+  // Hook to handle the "Ask MealBuddy" CTA
+  const handleAskMealBuddy = () => {
+    navigation.navigate('Chatbot'); // Updated to match the correct screen name
+  };
+
   return (
-  <ImageBackground
-    source={require('../../images/background.png')}
-    resizeMode="cover"
-    style={styles.background}
-    imageStyle={{ opacity: 0.20 }}
-  >
-    <Animated.ScrollView
-      contentContainerStyle={styles.scrollContent}
-      onScroll={scrollHandler}
-      scrollEventThrottle={16}
+    <ImageBackground
+      source={require('../../images/background.png')}
+      resizeMode="cover"
+      style={styles.background}
+      imageStyle={{ opacity: 0.20 }}
     >
+      <Animated.ScrollView
+        contentContainerStyle={styles.scrollContent}
+        onScroll={scrollHandler}
+        scrollEventThrottle={16}
+      >
+        {/* Header with greeting */}
+        <Animated.View style={[styles.greetingContainer, greetingAnimatedStyle]}>
+          <Animated.Text 
+            entering={FadeIn.duration(600)} 
+            style={styles.greetingText}
+          >
+            Good Morning, {firstName}! 👋
+          </Animated.Text>
+          <Animated.Text 
+            entering={FadeIn.delay(200).duration(400)} 
+            style={styles.dateText}
+          >
+            {currentDate}
+          </Animated.Text>
+          <Animated.Text 
+            entering={FadeIn.delay(300).duration(400)} 
+            style={styles.loggedText}
+          >
+            Meals logged today: {mealCount}
+          </Animated.Text>
+        </Animated.View>
 
-      <Animated.View style={[styles.greetingContainer, greetingAnimatedStyle]}>
-        <Text style={styles.greetingText}>Good Morning, {firstName}! 👋</Text>
-        <Text style={styles.dateText}>{currentDate}</Text>
-        <Text style={styles.loggedText}>Meals logged today: {mealCount}</Text>
-      </Animated.View>
+        {/* Meals of the Day Card */}
+        <AnimatedCard index={0} style={styles.mealOfDayCard}>
+          <View style={styles.mealOfDayHeader}>
+            <Text style={styles.mealOfDayTitle}>Meals of the Day</Text>
+            <TouchableOpacity 
+              style={styles.logMealButton}
+              onPress={() => navigation.navigate('AddIngredients')}
+            >
+              <Text style={styles.logMealButtonText}>+ Log Meal</Text>
+            </TouchableOpacity>
+          </View>
 
+          <View style={styles.mealCardBody}>
+            <View style={styles.placeholderBox} />
+            <Text style={styles.mealCardTitle}>Quinoa Buddha Bowl</Text>
+          </View>
 
-      <View style={styles.mealOfDayCard}>
-        <View style={styles.mealOfDayHeader}>
-          <Text style={styles.mealOfDayTitle}>Meals of the Day</Text>
-          <TouchableOpacity style={styles.logMealButton}>
-            <Text style={styles.logMealButtonText}>+ Log Meal</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('YourFridge')}>
+            <Text style={styles.viewAllText}>See all meals →</Text>
           </TouchableOpacity>
-        </View>
+        </AnimatedCard>
 
-        <View style={styles.mealCardBody}>
-          <View style={styles.placeholderBox} />
-          <Text style={styles.mealCardTitle}>Quinoa Buddha Bowl</Text>
-        </View>
-
-        <TouchableOpacity>
-          <Text style={styles.viewAllText}>See all meals →</Text>
-        </TouchableOpacity>
-      </View>
-
-
-      {/* Nutrition Summary Box */}
-      <View style={styles.mealContainer}>
-        <View style={styles.mealOfDayHeader}>
-          <Text style={styles.mealOfDayTitle}>Nutrition Summary</Text>
-        </View>
-        
-        <View style={styles.nutritionSummaryContent}>
-          <View style={styles.largeTrackerRow}>
-            <CircularTracker 
-              label="Calories" 
-              value={totals.calories} 
-              maxValue={2000} 
-              color={Colors.calories} 
-              size={150} 
-            />
-            <CircularTracker 
-              label="Water (oz)" 
-              value={totals.water} 
-              maxValue={100} 
-              color={Colors.water} 
-              size={150} 
-            />
+        {/* Nutrition Summary Card */}
+        <AnimatedCard index={1} style={styles.nutritionSummaryCard}>
+          <View style={styles.cardHeader}>
+            <Text style={styles.cardTitle}>Nutrition Summary</Text>
           </View>
           
-          <View style={styles.smallTrackerRow}>
-            <CircularTracker 
-              label="Protein" 
-              value={totals.protein} 
-              maxValue={100} 
-              color={Colors.protein} 
-              size={90} 
-            />
-            <CircularTracker 
-              label="Sugar" 
-              value={totals.sugar} 
-              maxValue={50} 
-              color={Colors.carbs} 
-              size={90} 
-            />
-            <CircularTracker 
-              label="Fats" 
-              value={totals.fats} 
-              maxValue={70} 
-              color={Colors.fats} 
-              size={90} 
-            />
+          <View style={styles.nutritionSummaryContent}>
+            <View style={styles.largeTrackerRow}>
+              <Animated.View entering={FadeIn.delay(200)}>
+                <CircularTracker 
+                  label="Calories" 
+                  value={totals.calories} 
+                  maxValue={2000} 
+                  color={Colors.calories} 
+                  size={140} 
+                  unit="kcal"
+                />
+              </Animated.View>
+              <Animated.View entering={FadeIn.delay(300)}>
+                <CircularTracker 
+                  label="Water" 
+                  value={totals.water} 
+                  maxValue={100} 
+                  color={Colors.water} 
+                  size={140} 
+                  unit="oz"
+                />
+              </Animated.View>
+            </View>
+            
+            <View style={styles.smallTrackerRow}>
+              <Animated.View entering={FadeIn.delay(400)}>
+                <CircularTracker 
+                  label="Protein" 
+                  value={totals.protein} 
+                  maxValue={100} 
+                  color={Colors.protein} 
+                  size={90} 
+                  unit="g"
+                />
+              </Animated.View>
+              <Animated.View entering={FadeIn.delay(500)}>
+                <CircularTracker 
+                  label="Sugar" 
+                  value={totals.sugar} 
+                  maxValue={50} 
+                  color={Colors.carbs} 
+                  size={90} 
+                  unit="g"
+                />
+              </Animated.View>
+              <Animated.View entering={FadeIn.delay(600)}>
+                <CircularTracker 
+                  label="Fats" 
+                  value={totals.fats} 
+                  maxValue={70} 
+                  color={Colors.fats} 
+                  size={90} 
+                  unit="g"
+                />
+              </Animated.View>
+            </View>
           </View>
-        </View>
-      </View>
+        </AnimatedCard>
+        
+        {/* Suggested Recipes Section */}
+        <AnimatedCard index={2} style={{marginBottom: 15}}>
+          <View style={styles.cardHeader}>
+            <Text style={styles.cardTitle}>Suggested Recipes</Text>
+          </View>
+          
+          <Animated.ScrollView 
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.recipeScrollView}
+          >
+            {/* Recipe Card 1 */}
+            <Animated.View 
+              entering={SlideInRight.delay(200).springify()}
+              style={styles.recipeCard}
+            >
+              <View style={styles.recipeImage} />
+              <View style={styles.recipeContent}>
+                <Text style={styles.recipeTitle}>Green Protein Bowl</Text>
+                <TouchableOpacity style={styles.recipeButton}>
+                  <Text style={styles.recipeButtonText}>View Recipe</Text>
+                </TouchableOpacity>
+              </View>
+            </Animated.View>
+            
+            {/* Recipe Card 2 */}
+            <Animated.View 
+              entering={SlideInRight.delay(300).springify()}
+              style={styles.recipeCard}
+            >
+              <View style={styles.recipeImage} />
+              <View style={styles.recipeContent}>
+                <Text style={styles.recipeTitle}>Mediterranean Salad</Text>
+                <TouchableOpacity style={styles.recipeButton}>
+                  <Text style={styles.recipeButtonText}>View Recipe</Text>
+                </TouchableOpacity>
+              </View>
+            </Animated.View>
+          </Animated.ScrollView>
+        </AnimatedCard>
+
+        {/* Meal Categories */}
+        {Object.keys(mealIngredients).map((mealType, mealIndex) => (
+          mealIngredients[mealType].length > 0 && (
+            <AnimatedCard key={mealType} index={3 + mealIndex} style={styles.mealContainer}>
+              <Text style={styles.mealTitle}>{mealType.charAt(0).toUpperCase() + mealType.slice(1)}</Text>
+              {mealIngredients[mealType].map((item, index) => (
+                <Animated.View 
+                  key={index} 
+                  entering={FadeIn.delay(100 * index)}
+                  style={styles.foodItem}
+                >
+                  <Text style={styles.foodName}>{item.name}</Text>
+                  <View style={styles.nutritionContainer}>
+                    <Text style={styles.nutritionText}>Calories: {item.calories} kcal</Text>
+                    <Text style={styles.nutritionText}>Protein: {item.protein} g</Text>
+                    <Text style={styles.nutritionText}>Fat: {item.total_fat} g</Text>
+                  </View>
+                </Animated.View>
+              ))}
+            </AnimatedCard>
+          )
+        ))}
+      </Animated.ScrollView>
       
-
-      {/* Bar Chart */}
-      <View style={{ marginTop: 20 }}>
-        <BarChart
-          data={{
-            labels: ['Calories', 'Water', 'Protein', 'Sugar', 'Fats'],
-            datasets: [
-              {
-                data: [
-                  totals.calories,
-                  totals.water,
-                  totals.protein,
-                  totals.sugar,
-                  totals.fats,
-                ],
-              },
-            ],
-          }}
-          width={370}
-          height={250}
-          yAxisLabel=""
-          yAxisSuffix="g"
-          chartConfig={{
-            backgroundColor: '#ffffff',
-            backgroundGradientFrom: '#ffffff',
-            backgroundGradientTo: '#ffffff',
-            decimalPlaces: 0,
-            color: (opacity = 1) => `rgba(26, 255, 146, ${opacity})`,
-            labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-            barPercentage: 0.7,
-            style: {
-              borderRadius: 16,
-            },
-          }}
-          style={{
-            marginVertical: 8,
-            borderRadius: 16,
-          }}
-        />
-      </View>
-
-      {/* Meal Categories */}
-      <View style={styles.mealContainer}>
-        <Text style={styles.mealTitle}>Breakfast</Text>
-        {mealIngredients.breakfast.map((item, index) => (
-          <View key={index} style={styles.foodItem}>
-            <Text style={styles.foodName}>{item.name}</Text>
-            <View style={styles.nutritionContainer}>
-              <Text style={styles.nutritionText}>Calories: {item.calories} kcal</Text>
-              <Text style={styles.nutritionText}>Protein: {item.protein} g</Text>
-              <Text style={styles.nutritionText}>Fat: {item.total_fat} g</Text>
-            </View>
-          </View>
-        ))}
-      </View>
-
-      <View style={styles.mealContainer}>
-        <Text style={styles.mealTitle}>Lunch</Text>
-        {mealIngredients.lunch.map((item, index) => (
-          <View key={index} style={styles.foodItem}>
-            <Text style={styles.foodName}>{item.name}</Text>
-            <View style={styles.nutritionContainer}>
-              <Text style={styles.nutritionText}>Calories: {item.calories} kcal</Text>
-              <Text style={styles.nutritionText}>Protein: {item.protein} g</Text>
-              <Text style={styles.nutritionText}>Fat: {item.total_fat} g</Text>
-            </View>
-          </View>
-        ))}
-      </View>
-
-      <View style={styles.mealContainer}>
-        <Text style={styles.mealTitle}>Dinner</Text>
-        {mealIngredients.dinner.map((item, index) => (
-          <View key={index} style={styles.foodItem}>
-            <Text style={styles.foodName}>{item.name}</Text>
-            <View style={styles.nutritionContainer}>
-              <Text style={styles.nutritionText}>Calories: {item.calories} kcal</Text>
-              <Text style={styles.nutritionText}>Protein: {item.protein} g</Text>
-              <Text style={styles.nutritionText}>Fat: {item.total_fat} g</Text>
-            </View>
-          </View>
-        ))}
-      </View>
-
-      <View style={styles.mealContainer}>
-        <Text style={styles.mealTitle}>Snack</Text>
-        {mealIngredients.snack.map((item, index) => (
-          <View key={index} style={styles.foodItem}>
-            <Text style={styles.foodName}>{item.name}</Text>
-            <View style={styles.nutritionContainer}>
-              <Text style={styles.nutritionText}>Calories: {item.calories} kcal</Text>
-              <Text style={styles.nutritionText}>Protein: {item.protein} g</Text>
-              <Text style={styles.nutritionText}>Fat: {item.total_fat} g</Text>
-            </View>
-          </View>
-        ))}
-      </View>
-    </Animated.ScrollView>
-  </ImageBackground>
+      {/* Chatbot CTA Button */}
+      <Animated.View 
+        entering={FadeIn.delay(800).duration(500)}
+        style={styles.chatbotCTA}
+      >
+        <TouchableOpacity 
+          onPress={handleAskMealBuddy}
+          style={{flexDirection: 'row', alignItems: 'center'}}
+        >
+          <Ionicons name="chatbubble-ellipses" size={24} color="#fff" />
+          <Text style={styles.chatbotCTAText}>Ask MealBuddy</Text>
+        </TouchableOpacity>
+      </Animated.View>
+    </ImageBackground>
   );
 };
 

@@ -1,193 +1,291 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
 import Colors from '../constants/Colors';
 
+// Constants for consistent spacing, fonts, etc.
+const SPACING = {
+  xs: 5,
+  sm: 10,
+  md: 15,
+  lg: 20,
+  xl: 25,
+  xxl: 30
+};
+
+const FONT_SIZE = {
+  small: 14,
+  medium: 16,
+  large: 18,
+  xlarge: 20,
+  xxlarge: 24
+};
+
+const CARD_STYLE = {
+  backgroundColor: '#fff',
+  borderRadius: 20,
+  padding: SPACING.md,
+  marginBottom: SPACING.md,
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.1,
+  shadowRadius: 8,
+  elevation: 4
+};
+
+const { width } = Dimensions.get('window');
+
 export default StyleSheet.create({
+  // Page layout
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: 'transparent',
-  },
-  
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
-    color: Colors.text,
-  },
-  mealContainer: {
-    marginTop: 20,
-    padding: 15,
-    borderRadius: 20,
-    backgroundColor: '#fff',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
-  },
-  largeTrackerRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%',
-    marginBottom: 20,
-    gap: 30,
-  },
-  smallTrackerRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%',
-    marginTop: 10,
-    gap: 15,
-  },
-  
-  mealTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: Colors.primary,
-    marginBottom: 10,
-  },
-  foodItem: {
-    marginBottom: 8,
-  },
-  foodName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.text,
-  },
-  nutritionContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 5,
-  },
-  nutritionText: {
-    fontSize: 14,
-    fontWeight: '500',
-    marginRight: 8,
+    backgroundColor: '#f9f9fb',
   },
   background: {
     flex: 1,
     width: '100%',
     height: '100%',
   },
-  
   scrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 60,
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.lg,
+    paddingBottom: SPACING.xxl * 2,
   },
   
-  
+  // Header & greeting
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 20,
-    backgroundColor: 'white',
-    paddingVertical: 10,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
+    justifyContent: 'space-between',
+    marginBottom: SPACING.lg,
+    paddingVertical: SPACING.sm,
   },
-  
-  logo: {
-    width: 40,
-    height: 40,
-    marginRight: 10,
-  },
-  
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: Colors.text,
-  },
-  
-
-
   greetingContainer: {
-    paddingVertical: 10,
-    marginBottom: 10,
+    paddingVertical: SPACING.sm,
+    marginBottom: SPACING.lg,
   },
   greetingText: {
-    fontSize: 22,
+    fontSize: FONT_SIZE.xxlarge,
+    fontWeight: 'bold',
+    color: Colors.text,
+    marginBottom: SPACING.xs,
+  },
+  dateText: {
+    fontSize: FONT_SIZE.small,
+    color: '#666',
+    marginBottom: SPACING.xs,
+  },
+  loggedText: {
+    fontSize: FONT_SIZE.small,
+    color: '#666',
+  },
+  profileImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#eee',
+    marginLeft: SPACING.md,
+  },
+  
+  // Cards
+  card: {
+    ...CARD_STYLE,
+    marginBottom: SPACING.lg,
+  },
+  mealContainer: {
+    ...CARD_STYLE,
+    marginTop: SPACING.md,
+  },
+  mealOfDayCard: {
+    ...CARD_STYLE,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: SPACING.md,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+    paddingBottom: SPACING.sm,
+  },
+  cardTitle: {
+    fontSize: FONT_SIZE.large,
     fontWeight: 'bold',
     color: Colors.text,
   },
-  dateText: {
-    fontSize: 14,
-    color: '#666',
-  },
-  loggedText: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 2,
-  },
   
-  mealOfDayCard: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
+  // Meal of Day section
   mealOfDayHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: SPACING.md,
   },
   mealOfDayTitle: {
-    fontSize: 18,
+    fontSize: FONT_SIZE.large,
     fontWeight: 'bold',
     color: Colors.text,
   },
   logMealButton: {
     backgroundColor: '#5e2bff',
-    borderRadius: 12,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
+    borderRadius: 20,
+    paddingVertical: SPACING.xs,
+    paddingHorizontal: SPACING.md,
+    shadowColor: '#5e2bff',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 2,
   },
   logMealButtonText: {
     color: '#fff',
-    fontSize: 14,
+    fontSize: FONT_SIZE.small,
     fontWeight: '600',
   },
   mealCardBody: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+  },
+  mealImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 16,
+    backgroundColor: '#f0f0f0',
+    marginRight: SPACING.md,
   },
   placeholderBox: {
-    width: 60,
-    height: 60,
-    backgroundColor: '#eee',
-    borderRadius: 10,
-    marginRight: 10,
+    width: 80,
+    height: 80,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 16,
+    marginRight: SPACING.md,
   },
   mealCardTitle: {
-    fontSize: 16,
+    fontSize: FONT_SIZE.medium,
     fontWeight: '600',
     color: Colors.text,
+    flex: 1,
   },
   viewAllText: {
     color: '#5e2bff',
-    marginTop: 10,
-    fontSize: 14,
+    marginTop: SPACING.md,
+    fontSize: FONT_SIZE.small,
     fontWeight: '500',
     textAlign: 'right',
   },
+  
+  // Nutrition section
+  nutritionSummaryCard: {
+    ...CARD_STYLE,
+  },
   nutritionSummaryContent: {
-    paddingVertical: 10,
+    paddingVertical: SPACING.sm,
     alignItems: 'center',
     width: '100%',
+  },
+  largeTrackerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: SPACING.lg,
+  },
+  smallTrackerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+    alignItems: 'center',
+    width: '100%',
+    marginTop: SPACING.sm,
+  },
+  
+  // Suggested recipes section
+  recipeScrollView: {
+    marginVertical: SPACING.md,
+  },
+  recipeCard: {
+    width: width * 0.7,
+    marginRight: SPACING.md,
+    ...CARD_STYLE,
+    padding: 0,
+    overflow: 'hidden',
+    borderRadius: 20,
+  },
+  recipeImage: {
+    width: '100%',
+    height: 120,
+  },
+  recipeContent: {
+    padding: SPACING.md,
+  },
+  recipeTitle: {
+    fontSize: FONT_SIZE.medium,
+    fontWeight: 'bold',
+    color: Colors.text,
+    marginBottom: SPACING.xs,
+  },
+  recipeButton: {
+    backgroundColor: '#5e2bff',
+    borderRadius: 20,
+    paddingVertical: SPACING.xs,
+    paddingHorizontal: SPACING.md,
+    marginTop: SPACING.sm,
+    alignSelf: 'flex-start',
+  },
+  recipeButtonText: {
+    color: '#fff',
+    fontSize: FONT_SIZE.small,
+    fontWeight: '600',
+  },
+  
+  // Meal items
+  mealTitle: {
+    fontSize: FONT_SIZE.large,
+    fontWeight: 'bold',
+    color: Colors.primary,
+    marginBottom: SPACING.sm,
+  },
+  foodItem: {
+    marginBottom: SPACING.sm,
+    padding: SPACING.sm,
+    backgroundColor: '#f9f9fb',
+    borderRadius: 12,
+  },
+  foodName: {
+    fontSize: FONT_SIZE.medium,
+    fontWeight: '600',
+    color: Colors.text,
+    marginBottom: SPACING.xs,
+  },
+  nutritionContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: SPACING.xs,
+  },
+  nutritionText: {
+    fontSize: FONT_SIZE.small,
+    color: '#666',
+    marginRight: SPACING.md,
+  },
+  
+  // ChatBot CTA
+  chatbotCTA: {
+    position: 'absolute',
+    bottom: SPACING.lg,
+    right: SPACING.lg,
+    backgroundColor: '#5e2bff',
+    borderRadius: 30,
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 6,
+  },
+  chatbotCTAText: {
+    color: '#fff',
+    fontSize: FONT_SIZE.medium,
+    fontWeight: '600',
+    marginLeft: SPACING.xs,
   },
 });

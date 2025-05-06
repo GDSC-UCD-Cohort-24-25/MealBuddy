@@ -1,47 +1,78 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
 import Colors from '../constants/Colors';
 
+// Constants for consistent spacing, fonts, etc.
+const SPACING = {
+  xs: 5,
+  sm: 10,
+  md: 15,
+  lg: 20,
+  xl: 25,
+  xxl: 30
+};
+
+const FONT_SIZE = {
+  small: 14,
+  medium: 16,
+  large: 18,
+  xlarge: 20,
+  xxlarge: 24
+};
+
+const BUBBLE_STYLE = {
+  maxWidth: '80%',
+  padding: SPACING.md,
+  borderRadius: 20,
+  marginBottom: SPACING.sm,
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 1 },
+  shadowOpacity: 0.1,
+  shadowRadius: 3,
+  elevation: 2,
+};
+
+const { width } = Dimensions.get('window');
+
 export default StyleSheet.create({
+  // Page layout
   background: {
     flex: 1,
     width: '100%',
     height: '100%',
   },
-
   container: {
     flex: 1,
-    padding: 20,
+    padding: SPACING.lg,
+    backgroundColor: 'transparent',
   },
+  
+  // Message list
   messageList: {
     flex: 1,
   },
   messageListContent: {
-    paddingBottom: 10,
+    paddingVertical: SPACING.lg,
   },
+  
+  // Message bubbles
   messageBubble: {
-    maxWidth: '80%',
-    padding: 12,
-    borderRadius: 16,
-    marginBottom: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 1,
+    ...BUBBLE_STYLE,
   },
   userBubble: {
     alignSelf: 'flex-end',
-    backgroundColor: Colors.primary,
+    backgroundColor: '#5e2bff',
     borderTopRightRadius: 4,
+    borderBottomLeftRadius: 20,
   },
   botBubble: {
     alignSelf: 'flex-start',
     backgroundColor: '#fff',
     borderTopLeftRadius: 4,
+    borderBottomRightRadius: 20,
   },
   messageText: {
-    fontSize: 16,
-    lineHeight: 22,
+    fontSize: FONT_SIZE.medium,
+    lineHeight: FONT_SIZE.medium * 1.4,
   },
   userText: {
     color: '#fff',
@@ -49,67 +80,77 @@ export default StyleSheet.create({
   botText: {
     color: Colors.text,
   },
+  highlightText: {
+    fontWeight: 'bold',
+    color: '#5e2bff',
+  },
+  linkText: {
+    color: '#0066cc',
+    textDecorationLine: 'underline',
+  },
+  
+  // Input area
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderTopWidth: 1,
-    borderColor: '#ccc',
-    paddingTop: 8,
-    paddingBottom: 19,
+    borderColor: '#eaeaea',
+    paddingTop: SPACING.sm,
+    paddingBottom: SPACING.lg,
   },
   input: {
     flex: 1,
     height: 50,
-    borderColor: '#ccc',
+    borderColor: '#e0e0e0',
     borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 10,
+    borderRadius: 25,
+    paddingHorizontal: SPACING.md,
     backgroundColor: '#fff',
+    fontSize: FONT_SIZE.medium,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 1,
   },
   sendButton: {
-    marginLeft: 10,
+    marginLeft: SPACING.md,
     backgroundColor: '#5e2bff',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.md,
+    borderRadius: 25,
+    shadowColor: '#5e2bff',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 2,
   },
   sendButtonText: {
     color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-
-  resetButton: {
-    paddingHorizontal: 8,
-  },
-
-  shorterInput: {
-    flex: 1, // Allows it to take the remaining space
-    height: 45,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    backgroundColor: '#fff',
-    marginHorizontal: 5, // Adds spacing between reset and send buttons
-  },
-
-  sendButtonText: {
-    color: '#fff',
-    fontSize: 16,
+    fontSize: FONT_SIZE.medium,
     fontWeight: 'bold',
   },
   
+  // Reset button
+  resetButton: {
+    padding: SPACING.xs,
+    marginLeft: -SPACING.md,
+    marginRight: SPACING.xs,
+  },
+  
+  // Avatar
   avatarIcon: {
-    width: 40,
-    height: 40,
+    width: 36,
+    height: 36,
     borderRadius: 18,
-    backgroundColor: '#eee',
-    marginHorizontal: -10,
-    marginTop: 0, 
-    marginRight: 12,
+    marginRight: SPACING.md,
     alignSelf: 'flex-start',
   },
   
+  // Message animations
+  slideInAnimation: {
+    transform: [{ translateY: 20 }],
+    opacity: 0,
+  },
 
 });
