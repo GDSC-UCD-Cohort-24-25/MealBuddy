@@ -35,6 +35,7 @@ const dietOptions = [
   'None', 'Vegetarian', 'Vegan', 'Keto', 'Paleo', 'Low Carb', 'High Protein'
 ];
 
+const genderOptions = ['Male', 'Female'];
 
 const AuthScreen = ({ navigation }) => {
   const [mode, setMode] = useState(null);
@@ -50,6 +51,7 @@ const AuthScreen = ({ navigation }) => {
   const [selectedHeight, setSelectedHeight] = useState('');
   const [activityPickerVisible, setActivityPickerVisible] = useState(false);
   const [dietPickerVisible, setDietPickerVisible] = useState(false);
+  const [genderPickerVisible, setGenderPickerVisible] = useState(false);
 
   useEffect(() => {
     fadeAnim.value = withTiming(1, { duration: 500 });
@@ -73,7 +75,7 @@ const AuthScreen = ({ navigation }) => {
   const [gender, setGender] = useState('');
   const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');
-  const [activityLevel, setActivityLevel] = useState('moderate');
+  const [activityLevel, setActivityLevel] = useState('');
   const [dietaryPreferences, setDietaryPreferences] = useState('');
   const [userProfile, setUserProfile] = useState(null);
   const [error, setError] = useState('');
@@ -275,19 +277,27 @@ const AuthScreen = ({ navigation }) => {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Picker
-              selectedValue={selectedHeight}
+              selectedValue={height}
               onValueChange={(itemValue) => {
-                setSelectedHeight(itemValue);
+                setHeight(itemValue);
               }}
               style={{ backgroundColor: '#fff' }}
               itemStyle={{ color: '#000', fontSize: 18 }}
-              
             >
-              {heightOptions.map((height) => (
-                <Picker.Item label={height} value={height} key={height} />
+              {heightOptions.map((option) => (
+                <Picker.Item label={option} value={option} key={option} />
               ))}
             </Picker>
-            <TouchableOpacity onPress={() => setHeightPickerVisible(false)} style={styles.modalButton}>
+            <TouchableOpacity 
+              onPress={() => {
+                // If no height is selected, default to the first option
+                if (!height) {
+                  setHeight(heightOptions[0]);
+                }
+                setHeightPickerVisible(false);
+              }} 
+              style={styles.modalButton}
+            >
               <Text style={styles.modalButtonText}>Done</Text>
             </TouchableOpacity>
           </View>
@@ -310,7 +320,15 @@ const AuthScreen = ({ navigation }) => {
                 <Picker.Item label={level} value={level} key={level} />
               ))}
             </Picker>
-            <TouchableOpacity onPress={() => setActivityPickerVisible(false)} style={styles.modalButton}>
+            <TouchableOpacity 
+              onPress={() => {
+                if (!activityLevel) {
+                  setActivityLevel(activityOptions[0]);
+                }
+                setActivityPickerVisible(false);
+              }} 
+              style={styles.modalButton}
+            >
               <Text style={styles.modalButtonText}>Done</Text>
             </TouchableOpacity>
           </View>
@@ -333,7 +351,47 @@ const AuthScreen = ({ navigation }) => {
                 <Picker.Item label={option} value={option} key={option} />
               ))}
             </Picker>
-            <TouchableOpacity onPress={() => setDietPickerVisible(false)} style={styles.modalButton}>
+            <TouchableOpacity 
+              onPress={() => {
+                if (!dietaryPreferences) {
+                  setDietaryPreferences(dietOptions[0]);
+                }
+                setDietPickerVisible(false);
+              }} 
+              style={styles.modalButton}
+            >
+              <Text style={styles.modalButtonText}>Done</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Gender Picker Modal */}
+      <Modal visible={genderPickerVisible} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Picker
+              selectedValue={gender}
+              onValueChange={(itemValue) => {
+                setGender(itemValue);
+              }}
+              style={{ backgroundColor: '#fff' }}
+              itemStyle={{ color: '#000', fontSize: 18 }}
+            >
+              {genderOptions.map((option) => (
+                <Picker.Item label={option} value={option} key={option} />
+              ))}
+            </Picker>
+            <TouchableOpacity 
+              onPress={() => {
+                // If no gender is selected, default to the first option
+                if (!gender) {
+                  setGender(genderOptions[0]);
+                }
+                setGenderPickerVisible(false);
+              }} 
+              style={styles.modalButton}
+            >
               <Text style={styles.modalButtonText}>Done</Text>
             </TouchableOpacity>
           </View>
@@ -466,6 +524,7 @@ const AuthScreen = ({ navigation }) => {
                       <Text style={{ fontSize: 14, color: '#555', marginBottom: 5 }}>Name</Text>
                       <TextInput
                         placeholder="Enter Your Name"
+                        placeholderTextColor="#999"
                         value={name}
                         onChangeText={setName}
                         style={{
@@ -476,6 +535,7 @@ const AuthScreen = ({ navigation }) => {
                           borderColor: '#ddd',
                           borderWidth: 1,
                           fontSize: 16,
+                          color: '#000',
                         }}
                       />
 
@@ -483,6 +543,7 @@ const AuthScreen = ({ navigation }) => {
                       <Text style={{ fontSize: 14, color: '#555', marginBottom: 5 }}>Age</Text>
                       <TextInput
                         placeholder="Enter Your Age"
+                        placeholderTextColor="#999"
                         value={age}
                         onChangeText={setAge}
                         keyboardType="numeric"
@@ -494,15 +555,14 @@ const AuthScreen = ({ navigation }) => {
                           borderColor: '#ddd',
                           borderWidth: 1,
                           fontSize: 16,
+                          color: '#000',
                         }}
                       />
 
                         {/* Gender Input */}
                       <Text style={{ fontSize: 14, color: '#555', marginBottom: 5 }}>Gender</Text>
-                      <TextInput
-                        placeholder="Enter Your Gender"
-                        value={gender}
-                        onChangeText={setGender}
+                      <TouchableOpacity
+                        onPress={() => setGenderPickerVisible(true)}
                         style={{
                           backgroundColor: '#fff',
                           borderRadius: 10,
@@ -512,28 +572,38 @@ const AuthScreen = ({ navigation }) => {
                           borderWidth: 1,
                           fontSize: 16,
                         }}
-                      />
+                      >
+                        <Text style={{ 
+                          color: gender ? '#000' : '#999',
+                          fontSize: 16,
+                          fontFamily: 'System' // or your app's default font
+                        }}>
+                          {gender || 'Select Gender'}
+                        </Text>
+                      </TouchableOpacity>
 
                       {/* Height Input with feet/inches format */}
-                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 }}>
-                        <View style={{ flex: 1, marginRight: 10 }}>
+                      <View style={{ marginBottom: 20 }}>
                         <Text style={{ fontSize: 14, color: '#555', marginBottom: 5 }}>Height</Text>
-                          <TouchableOpacity
-                            onPress={() => setHeightPickerVisible(true)}
-                            style={{
-                              backgroundColor: '#fff',
-                              borderRadius: 10,
-                              padding: 12,
-                              borderColor: '#ddd',
-                              borderWidth: 1,
-                              fontSize: 16,
-                              marginBottom: 20,
-                            }}
-                          >
-                            <Text>{selectedHeight || 'Select Height (e.g., 5\'11")'}</Text>
-                          </TouchableOpacity>
-
-                        </View>
+                        <TouchableOpacity
+                          onPress={() => setHeightPickerVisible(true)}
+                          style={{
+                            backgroundColor: '#fff',
+                            borderRadius: 10,
+                            padding: 12,
+                            borderColor: '#ddd',
+                            borderWidth: 1,
+                            fontSize: 16,
+                          }}
+                        >
+                          <Text style={{ 
+                            color: height ? '#000' : '#999',
+                            fontSize: 16,
+                            fontFamily: 'System' // or your app's default font
+                          }}>
+                            {height || 'Select Height'}
+                          </Text>
+                        </TouchableOpacity>
                       </View>
 
                       {/* Weight Input with lbs */}
@@ -541,6 +611,7 @@ const AuthScreen = ({ navigation }) => {
                         <Text style={{ fontSize: 14, color: '#555', marginBottom: 5 }}>Weight (lbs)</Text>
                         <TextInput
                           placeholder="Enter Your Weight"
+                          placeholderTextColor="#999"
                           value={weight}
                           onChangeText={setWeight}
                           keyboardType="numeric"
@@ -551,6 +622,7 @@ const AuthScreen = ({ navigation }) => {
                             borderColor: '#ddd',
                             borderWidth: 1,
                             fontSize: 16,
+                            color: '#000',
                           }}
                         />
                       </View>
@@ -567,12 +639,16 @@ const AuthScreen = ({ navigation }) => {
                             borderColor: '#ddd',
                             borderWidth: 1,
                             fontSize: 16,
-                            marginBottom: 20,
                           }}
                         >
-                          <Text>{activityLevel || 'Select Activity Level'}</Text>
+                          <Text style={{ 
+                            color: activityLevel ? '#000' : '#999',
+                            fontSize: 16,
+                            fontFamily: 'System' // or your app's default font
+                          }}>
+                            {activityLevel || 'Select Activity Level'}
+                          </Text>
                         </TouchableOpacity>
-
                       </View>
 
                       {/* Dietary Preferences */}
@@ -587,12 +663,16 @@ const AuthScreen = ({ navigation }) => {
                             borderColor: '#ddd',
                             borderWidth: 1,
                             fontSize: 16,
-                            marginBottom: 20,
                           }}
                         >
-                          <Text>{dietaryPreferences || 'Select Dietary Preference'}</Text>
+                          <Text style={{ 
+                            color: dietaryPreferences ? '#000' : '#999',
+                            fontSize: 16,
+                            fontFamily: 'System' // or your app's default font
+                          }}>
+                            {dietaryPreferences || 'Select Dietary Preference'}
+                          </Text>
                         </TouchableOpacity>
-
                       </View>
 
                       {/* Submit Button */}

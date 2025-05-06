@@ -11,7 +11,7 @@ import Chatbot from '../screens/chat_bot';
 import Profile from '../screens/profile';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '../constants/Colors';
-
+import SplashScreen from '../screens/splash_screen'; 
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -146,6 +146,5 @@ const styles = StyleSheet.create({
 });
 
 
-// At the bottom of tab_navigator.js
 
 export default MainTabs;

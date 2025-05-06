@@ -164,7 +164,7 @@ const Dashboard = () => {
     source={require('../../images/background.png')}
     resizeMode="cover"
     style={styles.background}
-    imageStyle={{ opacity: 0.30 }}
+    imageStyle={{ opacity: 0.20 }}
   >
     <Animated.ScrollView
       contentContainerStyle={styles.scrollContent}
@@ -198,76 +198,56 @@ const Dashboard = () => {
       </View>
 
 
-      <Text style={styles.title}>Nutrition Summary</Text>
-
-      <View style={styles.largeTrackerRow}>
-        <CircularTracker
-          label="Calories (kcal)"
-          value={totals.calories}
-          maxValue={2000}
-          color={Colors.calories}
-          size={140}
-          unit="kcal"
-        />
-        <CircularTracker
-          label="Water Intake"
-          value={totals.water}
-          maxValue={3000}
-          color={Colors.water}
-          size={140}
-          unit="ml"
-        />
+      {/* Nutrition Summary Box */}
+      <View style={styles.mealContainer}>
+        <View style={styles.mealOfDayHeader}>
+          <Text style={styles.mealOfDayTitle}>Nutrition Summary</Text>
+        </View>
+        
+        <View style={styles.nutritionSummaryContent}>
+          <View style={styles.largeTrackerRow}>
+            <CircularTracker 
+              label="Calories" 
+              value={totals.calories} 
+              maxValue={2000} 
+              color={Colors.calories} 
+              size={150} 
+            />
+            <CircularTracker 
+              label="Water (oz)" 
+              value={totals.water} 
+              maxValue={100} 
+              color={Colors.water} 
+              size={150} 
+            />
+          </View>
+          
+          <View style={styles.smallTrackerRow}>
+            <CircularTracker 
+              label="Protein" 
+              value={totals.protein} 
+              maxValue={100} 
+              color={Colors.protein} 
+              size={90} 
+            />
+            <CircularTracker 
+              label="Sugar" 
+              value={totals.sugar} 
+              maxValue={50} 
+              color={Colors.carbs} 
+              size={90} 
+            />
+            <CircularTracker 
+              label="Fats" 
+              value={totals.fats} 
+              maxValue={70} 
+              color={Colors.fats} 
+              size={90} 
+            />
+          </View>
+        </View>
       </View>
-
-      <View style={styles.smallTrackerRow}>
-        <CircularTracker
-          label="Protein"
-          value={totals.protein}
-          maxValue={100}
-          color={Colors.protein}
-          size={100}
-          unit="g"
-        />
-        <CircularTracker
-          label="Sugar"
-          value={totals.sugar}
-          maxValue={250}
-          color={Colors.carbs}
-          size={100}
-          unit="g"
-        />
-        <CircularTracker
-          label="Fats"
-          value={totals.fats}
-          maxValue={70}
-          color={Colors.fats}
-          size={100}
-          unit="g"
-        />
-      </View>
-
-      {/* Pie Chart */}
-      <View style={{ marginTop: 20 }}>
-        <PieChart
-          data={pieChartData}
-          width={370} // Pie chart width
-          height={250} // Pie chart height
-          chartConfig={{
-            backgroundColor: '#ffffff',
-            backgroundGradientFrom: '#ffffff',
-            backgroundGradientTo: '#ffffff',
-            color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-            labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-            style: {
-              borderRadius: 16,
-            },
-          }}
-          accessor="population"
-          backgroundColor="transparent"
-          paddingLeft="15"
-          center={[10, 10]}
-        />
-      </View>
+      
 
       {/* Bar Chart */}
       <View style={{ marginTop: 20 }}>

@@ -24,6 +24,7 @@ const Profile = () => {
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [profileImage, setProfileImage] = useState(null);
+  const [uploading, setUploading] = useState(false);
   const navigation = useNavigation();
   const unsubscribeRef = useRef(null);
 
@@ -49,6 +50,7 @@ const Profile = () => {
               dietaryPreferences: userData.dietaryPreferences || "None specified",
               createdAt: userData.createdAt || new Date(),
             });
+            setProfileImage(userData.profileImage || null);
           }
           setLoading(false);
         },
@@ -198,6 +200,52 @@ const Profile = () => {
     }
   };
 
+  const pickImage = async () => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        alert('Sorry, we need camera roll permissions to make this work!');
+        return;
+      }
+
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.5,
+      });
+
+      if (!result.canceled) {
+        await handleImagePicked(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      alert('Error picking image. Please try again.');
+    }
+  };
+
+  const handleImagePicked = async (uri) => {
+    if (!uri) return;
+    
+    try {
+      setUploading(true);
+      
+      // In a real app, you would upload the image to Firebase Storage here
+      // For now, we'll just store the local URI
+      const userRef = doc(db, 'users', auth.currentUser.uid);
+      await updateDoc(userRef, {
+        profileImage: uri
+      });
+      
+      setProfileImage(uri);
+    } catch (error) {
+      console.error('Error updating profile image:', error);
+      alert('Error updating profile image. Please try again.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -214,14 +262,22 @@ const Profile = () => {
       <View style={styles.container}>
         {/* Header with profile image and name */}
           <View style={styles.headerContainer}>
-            <TouchableOpacity onPress={pickImage}>
-              <View style={styles.profileImageContainer}>
-                {profileImage ? (
-                  <Image source={{ uri: profileImage }} style={styles.profileImage} />
-                ) : (
-                  <Text style={styles.profileInitial}>{user?.name?.charAt(0) || "U"}</Text>
-                )}
-              </View>
+            <TouchableOpacity 
+              onPress={pickImage}
+              style={styles.profileImageContainer}
+              disabled={uploading}
+            >
+              {profileImage ? (
+                <Image 
+                  source={{ uri: profileImage }} 
+                  style={styles.profileImage}
+                />
+              ) : (
+                <Ionicons name="person" size={60} color="#666" />
+              )}
+              {uploading && (
+                <ActivityIndicator style={styles.uploadIndicator} color="#666" />
+              )}
             </TouchableOpacity>
             <Text style={styles.title}>{user?.name}</Text>
           </View>
@@ -313,21 +369,5 @@ const Profile = () => {
     </ScrollView>
   );
 };
-
-  const pickImage = async () => {
-    // No permissions request is necessary for launching the image library
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
-
-    console.log(result);
-
-    if (!result.canceled) {
-      setProfileImage(result.assets[0].uri);
-    }
-  };
 
 export default Profile;

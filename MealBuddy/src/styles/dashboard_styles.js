@@ -28,17 +28,19 @@ export default StyleSheet.create({
   },
   largeTrackerRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    alignItems: 'center',
     width: '100%',
     marginBottom: 20,
-    gap: 10,
+    gap: 30,
   },
   smallTrackerRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    alignItems: 'center',
     width: '100%',
     marginTop: 10,
-    gap: 8,
+    gap: 15,
   },
   
   mealTitle: {
@@ -183,5 +185,9 @@ export default StyleSheet.create({
     fontWeight: '500',
     textAlign: 'right',
   },
-  
+  nutritionSummaryContent: {
+    paddingVertical: 10,
+    alignItems: 'center',
+    width: '100%',
+  },
 });
