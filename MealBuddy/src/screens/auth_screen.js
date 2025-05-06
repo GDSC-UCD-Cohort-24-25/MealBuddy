@@ -9,7 +9,7 @@ import { doc, setDoc, getDoc, writeBatch } from 'firebase/firestore';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '../constants/Colors';
 import { Picker } from '@react-native-picker/picker'; 
-
+import { useNavigation } from '@react-navigation/native';
 import { forgotPassword } from '../services/auth_service';
 import { useGoogleSignIn } from '../services/google_sign_in';
 import { Image } from 'react-native';
@@ -37,6 +37,8 @@ const dietOptions = [
 
 const genderOptions = ['Male', 'Female'];
 
+
+
 const AuthScreen = ({ navigation }) => {
   const [mode, setMode] = useState(null);
   const [email, setEmail] = useState('');
@@ -53,6 +55,7 @@ const AuthScreen = ({ navigation }) => {
   const [dietPickerVisible, setDietPickerVisible] = useState(false);
   const [genderPickerVisible, setGenderPickerVisible] = useState(false);
 
+  
   useEffect(() => {
     fadeAnim.value = withTiming(1, { duration: 500 });
     translateY.value = withTiming(0, { duration: 500 });
@@ -89,7 +92,9 @@ const AuthScreen = ({ navigation }) => {
         const docSnap = await getDoc(userRef);
         if (docSnap.exists()) {
           setUserProfile(docSnap.data());
-          navigation.replace('MainTabs');
+          if (navigation && navigation.replace) {
+            navigation.navigate('MainTabs');
+          }
         }
       }
     };

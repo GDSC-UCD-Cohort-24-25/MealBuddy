@@ -18,6 +18,9 @@ import { Ionicons } from "@expo/vector-icons";
 import Colors from "../constants/Colors";
 import * as ImagePicker from "expo-image-picker";
 
+
+
+
 const Profile = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);

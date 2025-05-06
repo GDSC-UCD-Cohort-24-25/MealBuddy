@@ -100,6 +100,16 @@ export default StyleSheet.create({
     fontWeight: 'bold',
   },
   
+  avatarIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 18,
+    backgroundColor: '#eee',
+    marginHorizontal: -10,
+    marginTop: 0, 
+    marginRight: 12,
+    alignSelf: 'flex-start',
+  },
   
 
 });

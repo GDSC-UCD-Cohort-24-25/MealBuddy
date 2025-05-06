@@ -102,7 +102,7 @@ const Dashboard = () => {
         newTotals.water += safeValue(data.water);
 
         // Group ingredients by meal category
-        if (data.mealCategory) {
+        if (data.mealCategory && newMealIngredients[data.mealCategory]) {
           newMealIngredients[data.mealCategory].push(data);
         }
       });

@@ -20,6 +20,7 @@ import { db, auth } from '../services/firebase_config';
 import { collection, onSnapshot } from 'firebase/firestore';
 import axios from 'axios';
 
+
 const Chatbot = () => {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]); // All chat messages are stored here.
@@ -184,7 +185,7 @@ Separate each recipe with a line containing only "---".`;
             let recipeTitle = titleMatch ? titleMatch[1] : `Recipe ${i+1}`;
             const videoLink = await fetchYouTubeVideo(recipeTitle);
             section += `\n\n🔗 Watch ${recipeTitle}: ${videoLink ? videoLink : "No video found"}`;
-            finalRecipesText += section + "\n\n";
+            finalRecipesText += section + "\n";
           }
           responseText += finalRecipesText;
           responseText += "\nLet me know if you need anything else.";
@@ -221,22 +222,43 @@ Separate each recipe with a line containing only "---".`;
   const renderMessage = (message) => {
     const linkRegex = /(https?:\/\/[^\s]+)/g;
     const parts = message.text.split(linkRegex);
+  
+    const isUser = message.isUser;
+  
     return (
-      <View key={message.id} style={[styles.messageBubble, message.isUser ? styles.userBubble : styles.botBubble]}>
-        {parts.map((part, index) =>
-          linkRegex.test(part) ? (
-            <TouchableOpacity key={index} onPress={() => Linking.openURL(part)}>
-              <Text style={[styles.messageText, styles.linkText]}>{part}</Text>
-            </TouchableOpacity>
-          ) : (
-            <Text key={index} style={[styles.messageText, message.isUser ? styles.userText : styles.botText]}>
-              {renderHighlightedText(part)}
-            </Text>
-          )
+      <View
+        key={message.id}
+        style={{
+          flexDirection: isUser ? 'row-reverse' : 'row',
+          alignItems: 'flex-start',
+          marginBottom: 12,
+          paddingHorizontal: 10,
+        }}
+      >
+        {!isUser && (
+          <Image
+          source={require('../../images/mealbuddy_icon.png')}
+          style={styles.avatarIcon}
+          />
+        
         )}
+        <View style={[styles.messageBubble, isUser ? styles.userBubble : styles.botBubble]}>
+          {parts.map((part, index) =>
+            linkRegex.test(part) ? (
+              <TouchableOpacity key={index} onPress={() => Linking.openURL(part)}>
+                <Text style={[styles.messageText, styles.linkText]}>{part}</Text>
+              </TouchableOpacity>
+            ) : (
+              <Text key={index} style={[styles.messageText, isUser ? styles.userText : styles.botText]}>
+                {renderHighlightedText(part)}
+              </Text>
+            )
+          )}
+        </View>
       </View>
     );
   };
+  
 
   return (
     <ImageBackground
