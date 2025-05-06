@@ -8,6 +8,7 @@ import {
   ScrollView,
   Image,
   StyleSheet,
+  ImageBackground
 } from "react-native";
 import { db, auth } from "../services/firebase_config";
 import { doc, onSnapshot, updateDoc } from "firebase/firestore";
@@ -261,6 +262,12 @@ const Profile = () => {
   const calorieNeeds = calculateCalorieNeeds();
 
   return (
+  <ImageBackground
+      source={require('../../images/background.png')}
+      resizeMode="cover"
+      style={styles.background}
+      imageStyle={{ opacity: 0.3 }}
+    >
     <ScrollView style={styles.scrollContainer}>
       <View style={styles.container}>
         {/* Header with profile image and name */}
@@ -370,6 +377,7 @@ const Profile = () => {
         )}
       </View>
     </ScrollView>
+  </ImageBackground>
   );
 };
 

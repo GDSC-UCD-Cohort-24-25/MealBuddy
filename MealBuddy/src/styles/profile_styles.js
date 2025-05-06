@@ -3,8 +3,7 @@ import Colors from '../constants/Colors';
 
 const styles = StyleSheet.create({
   scrollContainer: {
-    flex: 1,
-    backgroundColor: '#f3fefb',
+    flexGrow: 1,
   },
   container: {
     flex: 1,
@@ -170,6 +169,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: Colors.secondary,
   },
+  background: {
+    flex: 1,
+    resizeMode: 'cover',
+  },
+  
 });
 
 export default styles;
