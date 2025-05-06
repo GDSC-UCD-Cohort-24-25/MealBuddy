@@ -8,6 +8,7 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
+  ImageBackground
 } from "react-native";
 import { db, auth } from "../services/firebase_config";
 import { collection, query, orderBy, onSnapshot, deleteDoc, doc } from "firebase/firestore";
@@ -59,6 +60,12 @@ const YourFridge = () => {
   }
 
   return (
+  <ImageBackground
+      source={require('../../images/background.png')}
+      resizeMode="cover"
+      style={StyleSheet.absoluteFillObject}
+      imageStyle={{ opacity: 0.3 }}
+  >
     <View style={styles.container}>
       <TextInput
         style={styles.searchBar}
@@ -72,6 +79,7 @@ const YourFridge = () => {
         <FlatList
           data={filteredIngredients}
           keyExtractor={(item) => item.id}
+          contentContainerStyle={{ backgroundColor: 'transparent' }}
           renderItem={({ item }) => (
             <View style={styles.item}>
               <Text style={styles.ingredientText}>{item.name} ({item.serving_size})</Text>
@@ -88,6 +96,7 @@ const YourFridge = () => {
         />
       )}
     </View>
+  </ImageBackground>
   );
 };
 
@@ -95,7 +104,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#f3fefb',
+    backgroundColor: "transparent"
   },
   searchBar: {
     padding: 10,

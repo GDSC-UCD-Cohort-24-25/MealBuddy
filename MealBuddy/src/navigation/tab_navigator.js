@@ -13,11 +13,8 @@ import { Ionicons } from '@expo/vector-icons';
 import Colors from '../constants/Colors';
 import SplashScreen from '../screens/splash_screen'; 
 
+
 const Tab = createBottomTabNavigator();
-const Stack = createStackNavigator();
-
-
-
 
 
 
@@ -28,7 +25,7 @@ const MainTabs = () => (
         let iconName;
         if (route.name === 'Dashboard') iconName = 'home-outline' ;
         else if (route.name === 'Your Fridge') iconName = 'basket-outline';
-        else if (route.name === 'Add') iconName = 'add-circle-outline';
+        else if (route.name === 'Add Food') iconName = 'add-circle-outline';
         else if (route.name === 'Chatbot') iconName = 'chatbubble-ellipses-outline';
         else if (route.name === 'Profile') iconName = 'person-outline';
 
@@ -40,7 +37,7 @@ const MainTabs = () => (
   >
     <Tab.Screen name="Dashboard" component={Dashboard} />
     <Tab.Screen name="Your Fridge" component={YourFridge} />
-    <Tab.Screen name="Add" component={AddIngredients} />
+    <Tab.Screen name="Add Food" component={AddIngredients} />
     <Tab.Screen name="Chatbot" component={Chatbot} />
     <Tab.Screen name="Profile" component={Profile} />
   </Tab.Navigator>

@@ -9,16 +9,27 @@ import {
   KeyboardAvoidingView, 
   Platform,
   Linking,
-  ScrollView,
   Image,
   ImageBackground
 } from 'react-native';
 import styles from '../styles/chatbot_styles';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSpring,
+  withDelay,
+  FadeIn,
+  FadeOut,
+  SlideInRight,
+  SlideInLeft
+} from 'react-native-reanimated';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { GOOGLE_GEMINI_API_KEY, YOUTUBE_API_KEY } from '@env';
 import { db, auth } from '../services/firebase_config';
 import { collection, onSnapshot } from 'firebase/firestore';
 import axios from 'axios';
+
 
 const Chatbot = () => {
   const [input, setInput] = useState('');
@@ -184,7 +195,7 @@ Separate each recipe with a line containing only "---".`;
             let recipeTitle = titleMatch ? titleMatch[1] : `Recipe ${i+1}`;
             const videoLink = await fetchYouTubeVideo(recipeTitle);
             section += `\n\n🔗 Watch ${recipeTitle}: ${videoLink ? videoLink : "No video found"}`;
-            finalRecipesText += section + "\n\n";
+            finalRecipesText += section + "\n";
           }
           responseText += finalRecipesText;
           responseText += "\nLet me know if you need anything else.";
@@ -217,57 +228,115 @@ Separate each recipe with a line containing only "---".`;
     }
   };
 
-  // Render messages with clickable links and highlighted text.
-  const renderMessage = (message) => {
+  // Animated send button scale for press effect
+  const buttonScale = useSharedValue(1);
+  
+  const onPressIn = () => {
+    buttonScale.value = withSpring(0.95, { damping: 10, stiffness: 100 });
+  };
+  
+  const onPressOut = () => {
+    buttonScale.value = withSpring(1, { damping: 10, stiffness: 100 });
+  };
+  
+  const animatedButtonStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: buttonScale.value }]
+    };
+  });
+  
+  // Render messages with clickable links, highlighted text and animations
+  const renderMessage = (message, index) => {
     const linkRegex = /(https?:\/\/[^\s]+)/g;
     const parts = message.text.split(linkRegex);
+    const isUser = message.isUser;
+    
+    // Different animation based on user/bot message
+    const enteringAnimation = isUser 
+      ? SlideInRight.delay(50).springify()
+      : SlideInLeft.delay(50).springify();
+    
     return (
-      <View key={message.id} style={[styles.messageBubble, message.isUser ? styles.userBubble : styles.botBubble]}>
-        {parts.map((part, index) =>
-          linkRegex.test(part) ? (
-            <TouchableOpacity key={index} onPress={() => Linking.openURL(part)}>
-              <Text style={[styles.messageText, styles.linkText]}>{part}</Text>
-            </TouchableOpacity>
-          ) : (
-            <Text key={index} style={[styles.messageText, message.isUser ? styles.userText : styles.botText]}>
-              {renderHighlightedText(part)}
-            </Text>
-          )
+      <Animated.View
+        key={message.id}
+        entering={enteringAnimation}
+        style={{
+          flexDirection: isUser ? 'row-reverse' : 'row',
+          alignItems: 'flex-start',
+          marginBottom: 12,
+          paddingHorizontal: 10,
+        }}
+      >
+        {!isUser && (
+          <Animated.Image
+            entering={FadeIn.delay(100).duration(300)}
+            source={require('../../images/mealbuddy_icon.png')}
+            style={styles.avatarIcon}
+          />
         )}
-      </View>
+        
+        <Animated.View 
+          style={[styles.messageBubble, isUser ? styles.userBubble : styles.botBubble]}
+        >
+          {parts.map((part, idx) =>
+            linkRegex.test(part) ? (
+              <TouchableOpacity key={idx} onPress={() => Linking.openURL(part)}>
+                <Text style={[styles.messageText, styles.linkText]}>{part}</Text>
+              </TouchableOpacity>
+            ) : (
+              <Text key={idx} style={[styles.messageText, isUser ? styles.userText : styles.botText]}>
+                {renderHighlightedText(part)}
+              </Text>
+            )
+          )}
+        </Animated.View>
+      </Animated.View>
     );
   };
 
   return (
     <ImageBackground
-    source={require('../../images/background.png')}
-    resizeMode="cover"
-    style={styles.background}
-    imageStyle={{ opacity: 0.3 }}
+      source={require('../../images/background.png')}
+      resizeMode="cover"
+      style={styles.background}
+      imageStyle={{ opacity: 0.3 }}
     >
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
         style={styles.container}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 50} 
       >
-      
-        <ScrollView
+        <Animated.ScrollView
           ref={scrollViewRef}
           contentContainerStyle={styles.messageListContent}
           onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
         >
-          
-          {messages.map(message => renderMessage(message))}
-        </ScrollView>
-        {loading && <ActivityIndicator size="large" color="#007bff" />}
-
+          {messages.map((message, index) => renderMessage(message, index))}
+        </Animated.ScrollView>
+        
+        {loading && (
+          <Animated.View 
+            entering={FadeIn.duration(200)}
+            exiting={FadeOut.duration(200)}
+            style={{ alignItems: 'center', marginVertical: 10 }}
+          >
+            <ActivityIndicator size="large" color="#5e2bff" />
+          </Animated.View>
+        )}
+        
         {/* Reset Chat Button */}
-        <TouchableOpacity style={styles.resetButton} onPress={resetChatbot}>
-          <Ionicons name="refresh-circle" size={36} color="#5e2bff" />
-        </TouchableOpacity>
+        <Animated.View
+          entering={FadeIn.delay(600).duration(500)}
+        >
+          <TouchableOpacity style={styles.resetButton} onPress={resetChatbot}>
+            <Ionicons name="refresh-circle" size={36} color="#5e2bff" />
+          </TouchableOpacity>
+        </Animated.View>
 
-        <View style={styles.inputContainer}>
-          
+        <Animated.View 
+          style={styles.inputContainer}
+          entering={FadeIn.delay(300).duration(500)}
+        >
           <TextInput
             placeholder="Ask me anything about cooking..."
             value={input}
@@ -275,11 +344,18 @@ Separate each recipe with a line containing only "---".`;
             style={styles.input}
             returnKeyType="send"
           />
-          <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
-            <Text style={styles.sendButtonText}>Send</Text>
-          </TouchableOpacity>
           
-        </View>
+          <Animated.View style={animatedButtonStyle}>
+            <TouchableOpacity 
+              style={styles.sendButton} 
+              onPress={sendMessage}
+              onPressIn={onPressIn}
+              onPressOut={onPressOut}
+            >
+              <Text style={styles.sendButtonText}>Send</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        </Animated.View>
       </KeyboardAvoidingView>
     </ImageBackground>
   );

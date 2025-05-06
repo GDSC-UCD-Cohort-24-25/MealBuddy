@@ -4,10 +4,13 @@ import {
   Text,
   ActivityIndicator,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   Alert,
   ScrollView,
   Image,
   StyleSheet,
+  ImageBackground,
+  Dimensions
 } from "react-native";
 import { db, auth } from "../services/firebase_config";
 import { doc, onSnapshot, updateDoc } from "firebase/firestore";
@@ -17,6 +20,72 @@ import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import Colors from "../constants/Colors";
 import * as ImagePicker from "expo-image-picker";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSpring,
+  withDelay,
+  interpolate,
+  Extrapolate,
+  FadeIn,
+  FadeOut,
+  SlideInUp
+} from "react-native-reanimated";
+
+// Interactive animated card with press feedback
+const AnimatedCard = ({ index, children }) => {
+  const scale = useSharedValue(1);
+  
+  // Animation for when the card is pressed
+  const onPressIn = () => {
+    scale.value = withSpring(0.98, { damping: 20, stiffness: 200 });
+  };
+  
+  const onPressOut = () => {
+    scale.value = withSpring(1, { damping: 20, stiffness: 200 });
+  };
+  
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: scale.value }],
+    };
+  });
+  
+  return (
+    <Animated.View 
+      entering={SlideInUp.delay(index * 200).springify()} 
+      style={[styles.card, animatedStyle]}
+    >
+      <TouchableWithoutFeedback onPressIn={onPressIn} onPressOut={onPressOut}>
+        <View>
+          {children}
+        </View>
+      </TouchableWithoutFeedback>
+    </Animated.View>
+  );
+};
+
+// Animated info row component for consistent animations
+const AnimatedInfoRow = ({ label, value, delay = 0, color }) => {
+  return (
+    <Animated.View 
+      entering={FadeIn.delay(delay).duration(400)}
+      style={styles.infoRow}
+    >
+      <Text style={styles.infoLabel}>{label}</Text>
+      <Text style={[
+        styles.infoValue, 
+        color ? { color } : null
+      ]} numberOfLines={3} ellipsizeMode="tail">
+        {value}
+      </Text>
+    </Animated.View>
+  );
+};
+
+
+
 
 const Profile = () => {
   const [user, setUser] = useState(null);
@@ -257,116 +326,143 @@ const Profile = () => {
   const bmi = calculateBMI();
   const calorieNeeds = calculateCalorieNeeds();
 
-  return (
-    <ScrollView style={styles.scrollContainer}>
-      <View style={styles.container}>
-        {/* Header with profile image and name */}
-          <View style={styles.headerContainer}>
-            <TouchableOpacity 
-              onPress={pickImage}
-              style={styles.profileImageContainer}
-              disabled={uploading}
-            >
-              {profileImage ? (
-                <Image 
-                  source={{ uri: profileImage }} 
-                  style={styles.profileImage}
-                />
-              ) : (
-                <Ionicons name="person" size={60} color="#666" />
-              )}
-              {uploading && (
-                <ActivityIndicator style={styles.uploadIndicator} color="#666" />
-              )}
-            </TouchableOpacity>
-            <Text style={styles.title}>{user?.name}</Text>
-          </View>
+  
 
-        {/* Sign Out Button */}
-        <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
-          <Text style={styles.signOutText}>Sign Out</Text>
+  // Create an animated profile header
+  const ProfileHeader = () => {
+    return (
+      <Animated.View 
+        entering={FadeIn.delay(100).duration(600)}
+        style={styles.headerContainer}
+      >
+        <TouchableOpacity 
+          onPress={pickImage}
+          style={styles.profileImageContainer}
+          disabled={uploading}
+        >
+          {profileImage ? (
+            <Animated.Image 
+              entering={FadeIn.duration(500)}
+              source={{ uri: profileImage }} 
+              style={styles.profileImage}
+            />
+          ) : (
+            <Animated.View entering={FadeIn.duration(500)}>
+              <Ionicons name="person" size={60} color="#666" />
+            </Animated.View>
+          )}
+          {uploading && (
+            <ActivityIndicator style={styles.uploadIndicator} color="#666" />
+          )}
         </TouchableOpacity>
+        <Animated.Text 
+          entering={FadeIn.delay(300).duration(500)}
+          style={styles.title}
+        >
+          {user?.name}
+        </Animated.Text>
+      </Animated.View>
+    );
+  };
 
-        {user ? (
-          <>
-            {/* Health Metrics Card */}
-            <View style={styles.card}>
-              <View style={styles.cardHeader}>
-                <Ionicons name="fitness-outline" size={24} color={Colors.primary} />
-                <Text style={styles.cardTitle}>Health Metrics</Text>
-              </View>
-              
-              <View style={styles.cardContent}>
-                <View style={styles.metricRow}>
-                  <Text style={styles.metricLabel}>BMI</Text>
-                  <View style={styles.metricValueContainer}>
-                    <Text style={[styles.metricValue, { color: bmi.color }]}>{bmi.value}</Text>
-                    <Text style={[styles.metricCategory, { color: bmi.color }]}>{bmi.category}</Text>
+  return (
+    <ImageBackground
+      source={require('../../images/background.png')}
+      resizeMode="cover"
+      style={styles.background}
+      imageStyle={{ opacity: 0.3 }}
+    >
+      <ScrollView style={styles.scrollContainer}>
+        <View style={styles.container}>
+          {/* Header with profile image and name */}
+          <ProfileHeader />
+
+          {/* Sign Out Button */}
+          <Animated.View entering={FadeIn.delay(400)}>
+            <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
+              <Text style={styles.signOutText}>Sign Out</Text>
+            </TouchableOpacity>
+          </Animated.View>
+
+          {user ? (
+            <>
+              {/* Health Metrics Card */}
+              <AnimatedCard index={0}>
+                <View style={styles.cardHeader}>
+                  <Ionicons name="fitness-outline" size={24} color={Colors.primary} />
+                  <Text style={styles.cardTitle}>Health Metrics</Text>
+                </View>
+                
+                <View style={styles.cardContent}>
+                  <View style={styles.metricRow}>
+                    <Text style={styles.metricLabel}>BMI</Text>
+                    <Animated.View 
+                      entering={FadeIn.delay(100).duration(300)}
+                      style={styles.metricValueContainer}
+                    >
+                      <Text style={[styles.metricValue, { color: bmi.color }]}>{bmi.value}</Text>
+                      <Text style={[styles.metricCategory, { color: bmi.color }]}>{bmi.category}</Text>
+                    </Animated.View>
                   </View>
+                  
+                  <Animated.View 
+                    entering={FadeIn.delay(200).duration(300)}
+                    style={styles.metricRow}
+                  >
+                    <Text style={styles.metricLabel}>Daily Calories</Text>
+                    <Text style={styles.metricValue}>{calorieNeeds} kcal</Text>
+                  </Animated.View>
                 </View>
-                
-                <View style={styles.metricRow}>
-                  <Text style={styles.metricLabel}>Daily Calories</Text>
-                  <Text style={styles.metricValue}>{calorieNeeds} kcal</Text>
-                </View>
-              </View>
-            </View>
+              </AnimatedCard>
 
-            {/* Personal Information Card */}
-            <View style={styles.card}>
-              <View style={styles.cardHeader}>
-                <Ionicons name="person-outline" size={24} color={Colors.primary} />
-                <Text style={styles.cardTitle}>Personal Information</Text>
-              </View>
-              
-              <View style={styles.cardContent}>
-                <View style={styles.infoRow}>
-                  <Text style={styles.infoLabel}>Age</Text>
-                  <Text style={styles.infoValue}>{user.age}</Text>
+              {/* Personal Information Card */}
+              <AnimatedCard index={1}>
+                <View style={styles.cardHeader}>
+                  <Ionicons name="person-outline" size={24} color={Colors.primary} />
+                  <Text style={styles.cardTitle}>Personal Information</Text>
                 </View>
                 
-                <View style={styles.infoRow}>
-                  <Text style={styles.infoLabel}>Gender</Text>
-                  <Text style={styles.infoValue}>{user.gender}</Text>
+                <View style={styles.cardContent}>
+                  <AnimatedInfoRow label="Age" value={user.age} delay={100} />
+                  <AnimatedInfoRow label="Gender" value={user.gender} delay={150} />
+                  <AnimatedInfoRow label="Height" value={`${user.height} ft`} delay={200} />
+                  <AnimatedInfoRow label="Weight" value={`${user.weight} lbs`} delay={250} />
                 </View>
-                
-                <View style={styles.infoRow}>
-                  <Text style={styles.infoLabel}>Height</Text>
-                  <Text style={styles.infoValue}>{user.height} ft</Text>
-                </View>
-                
-                <View style={styles.infoRow}>
-                  <Text style={styles.infoLabel}>Weight</Text>
-                  <Text style={styles.infoValue}>{user.weight} lbs</Text>
-                </View>
-              </View>
-            </View>
+              </AnimatedCard>
 
-            {/* Preferences Card */}
-            <View style={styles.card}>
-              <View style={styles.cardHeader}>
-                <Ionicons name="options-outline" size={24} color={Colors.primary} />
-                <Text style={styles.cardTitle}>Preferences</Text>
-              </View>
-              
-              <View style={styles.cardContent}>
-                <View style={styles.infoRow}>
-                  <Text style={styles.infoLabel}>Activity Level</Text>
-                  <Text style={styles.infoValue}>{getActivityLevelText(user.activityLevel)}</Text>
+              {/* Preferences Card */}
+              <AnimatedCard index={2}>
+                <View style={styles.cardHeader}>
+                  <Ionicons name="options-outline" size={24} color={Colors.primary} />
+                  <Text style={styles.cardTitle}>Preferences</Text>
                 </View>
                 
-                <View style={styles.infoRow}>
-                  <Text style={styles.infoLabel}>Dietary Preferences</Text>
-                  <Text style={styles.infoValue}>{user.dietaryPreferences}</Text>
+                <View style={styles.cardContent}>
+                  <AnimatedInfoRow 
+                    label="Activity Level" 
+                    value={getActivityLevelText(user.activityLevel)} 
+                    delay={100} 
+                  />
+                  
+                  <AnimatedInfoRow 
+                    label="Dietary Preferences" 
+                    value={user.dietaryPreferences} 
+                    delay={200} 
+                  />
                 </View>
-              </View>
-            </View>
-          </>
-        ) : (
-          <Text style={styles.noDataText}>No profile data found.</Text>
-        )}
-      </View>
-    </ScrollView>
+              </AnimatedCard>
+            </>
+          ) : (
+            <Animated.Text 
+              entering={FadeIn.delay(500)}
+              style={styles.noDataText}
+            >
+              No profile data found.
+            </Animated.Text>
+          )}
+        </View>
+      </ScrollView>
+    </ImageBackground>
   );
 };
 
