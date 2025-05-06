@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Colors from '../constants/Colors';
 import SplashScreen from '../screens/splash_screen'; 
 
+
 const Tab = createBottomTabNavigator();
 
 

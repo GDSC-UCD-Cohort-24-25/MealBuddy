@@ -1,14 +1,66 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
 import Colors from '../constants/Colors';
 
+// Constants for consistent spacing, fonts, etc.
+const SPACING = {
+  xs: 5,
+  sm: 10,
+  md: 15,
+  lg: 20,
+  xl: 25,
+};
+
+const FONT_SIZE = {
+  small: 14,
+  medium: 16,
+  large: 18,
+  xlarge: 20,
+  xxlarge: 24,
+};
+
+const { width } = Dimensions.get('window');
+
+// Shared styles for reusability
+const sharedStyles = {
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: SPACING.md,
+    marginBottom: SPACING.md,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: SPACING.sm,
+  },
+  label: {
+    fontSize: FONT_SIZE.medium,
+    color: Colors.text,
+    fontWeight: '500',
+    flex: 0.45,
+  },
+  value: {
+    fontSize: FONT_SIZE.medium,
+    color: Colors.secondary,
+    flex: 0.55,
+    textAlign: 'right',
+  },
+};
+
 const styles = StyleSheet.create({
+  // Page layout
   scrollContainer: {
     flexGrow: 1,
   },
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: '#f3fefb',
+    padding: SPACING.lg,
   },
   loadingContainer: {
     flex: 1,
@@ -16,66 +68,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#f3fefb',
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: Colors.primary,
-    marginBottom: 10,
-    textAlign: 'center',
+  background: {
+    flex: 1,
+    resizeMode: 'cover',
   },
-  profileInfoContainer: {
-    marginTop: 10,
-    padding: 15,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
-    width: '90%',
-    alignItems: 'center',
-  },
-  subtitle: {
-    fontSize: 20,
-    color: Colors.text,
-    textAlign: 'center',
-    marginBottom: 8,
-    fontWeight: '500',
-  },
-  value: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: Colors.primary,
-  },
-  noDataText: {
-    fontSize: 18,
-    color: Colors.secondary,
-    textAlign: 'center',
-    fontStyle: 'italic',
-  },
-  signOutButton: {
-    position: 'absolute',
-    top: 20,
-    right: 20,
-    backgroundColor: '#ff5c5c',
-    paddingVertical: 8,
-    paddingHorizontal: 15,
-    borderRadius: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  signOutText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
+  
+  // Header & profile section
   headerContainer: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: SPACING.xl,
+    marginTop: SPACING.md,
   },
   profileImageContainer: {
     width: 120,
@@ -85,18 +87,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
-    marginBottom: 15,
+    marginBottom: SPACING.md,
     borderWidth: 2,
     borderColor: '#ddd',
-  },
-  profileInitial: {
-    fontSize: 40,
-    fontWeight: 'bold',
-    color: Colors.text,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
   profileImage: {
     width: '100%',
     height: '100%',
+  },
+  profileInitial: {
+    fontSize: FONT_SIZE.xxlarge * 1.5,
+    fontWeight: 'bold',
+    color: Colors.text,
   },
   uploadIndicator: {
     position: 'absolute',
@@ -106,72 +113,107 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  title: {
+    fontSize: FONT_SIZE.xxlarge,
+    fontWeight: 'bold',
+    color: Colors.primary,
+    marginBottom: SPACING.sm,
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: FONT_SIZE.xlarge,
+    color: Colors.text,
+    textAlign: 'center',
+    marginBottom: SPACING.sm,
+    fontWeight: '500',
+  },
+  
+  // Card components
   card: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    ...sharedStyles.card,
+    marginBottom: SPACING.lg,
   },
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: SPACING.md,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+    paddingBottom: SPACING.sm,
   },
   cardTitle: {
-    fontSize: 20,
+    fontSize: FONT_SIZE.xlarge,
     fontWeight: 'bold',
     color: Colors.text,
-    marginLeft: 10,
+    marginLeft: SPACING.sm,
   },
   cardContent: {
-    paddingHorizontal: 10,
+    paddingHorizontal: SPACING.sm,
   },
+  
+  // Information rows
+  infoRow: {
+    ...sharedStyles.row,
+    paddingVertical: SPACING.xs,
+  },
+  infoLabel: {
+    ...sharedStyles.label,
+  },
+  infoValue: {
+    ...sharedStyles.value,
+    flexWrap: 'wrap', // Allow text to wrap
+  },
+  
+  // Metrics rows & values
   metricRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
+    ...sharedStyles.row,
+    paddingVertical: SPACING.xs,
   },
   metricLabel: {
-    fontSize: 16,
-    color: Colors.text,
-    fontWeight: '500',
+    ...sharedStyles.label,
   },
   metricValueContainer: {
     flexDirection: 'column',
     alignItems: 'flex-end',
+    flex: 0.55,
   },
   metricValue: {
-    fontSize: 18,
+    fontSize: FONT_SIZE.large,
     fontWeight: 'bold',
-    color: Colors.primary,
   },
   metricCategory: {
-    fontSize: 14,
-    color: Colors.primary,
+    fontSize: FONT_SIZE.small,
   },
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
+  
+  // Button styles
+  signOutButton: {
+    position: 'absolute',
+    top: SPACING.lg,
+    right: SPACING.lg,
+    backgroundColor: '#ff5c5c',
+    paddingVertical: SPACING.xs,
+    paddingHorizontal: SPACING.md,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+    zIndex: 10,
   },
-  infoLabel: {
-    fontSize: 16,
-    color: Colors.text,
-    fontWeight: '500',
+  signOutText: {
+    color: '#fff',
+    fontSize: FONT_SIZE.medium,
+    fontWeight: '600',
   },
-  infoValue: {
-    fontSize: 16,
+  
+  // Miscellaneous
+  noDataText: {
+    fontSize: FONT_SIZE.large,
     color: Colors.secondary,
-  },
-  background: {
-    flex: 1,
-    resizeMode: 'cover',
+    textAlign: 'center',
+    fontStyle: 'italic',
+    marginTop: SPACING.xl,
   },
   
 });
