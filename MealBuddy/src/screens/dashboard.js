@@ -209,7 +209,7 @@ const Dashboard = () => {
             entering={FadeIn.duration(600)} 
             style={styles.greetingText}
           >
-            Good Morning, {firstName}! 👋
+            Welcome, {firstName}! 👋
           </Animated.Text>
           <Animated.Text 
             entering={FadeIn.delay(200).duration(400)} 
@@ -231,7 +231,7 @@ const Dashboard = () => {
             <Text style={styles.mealOfDayTitle}>Meals of the Day</Text>
             <TouchableOpacity 
               style={styles.logMealButton}
-              onPress={() => navigation.navigate('AddIngredients')}
+              onPress={() => navigation.navigate('Add Food')}
             >
               <Text style={styles.logMealButtonText}>+ Log Meal</Text>
             </TouchableOpacity>
@@ -242,7 +242,7 @@ const Dashboard = () => {
             <Text style={styles.mealCardTitle}>Quinoa Buddha Bowl</Text>
           </View>
 
-          <TouchableOpacity onPress={() => navigation.navigate('YourFridge')}>
+          <TouchableOpacity onPress={() => navigation.navigate('Your Fridge')}>
             <Text style={styles.viewAllText}>See all meals →</Text>
           </TouchableOpacity>
         </AnimatedCard>

@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: FONT_SIZE.xxlarge,
     fontWeight: 'bold',
-    color: Colors.primary,
+    color: '#5e2bff',
     marginBottom: SPACING.sm,
     textAlign: 'center',
   },
@@ -166,23 +166,61 @@ const styles = StyleSheet.create({
   
   // Metrics rows & values
   metricRow: {
-    ...sharedStyles.row,
-    paddingVertical: SPACING.xs,
+    marginBottom: SPACING.md,
   },
   metricLabel: {
-    ...sharedStyles.label,
+    fontSize: FONT_SIZE.medium,
+    fontWeight: '600',
+    color: Colors.text,
+    marginBottom: SPACING.xs,
   },
   metricValueContainer: {
-    flexDirection: 'column',
-    alignItems: 'flex-end',
-    flex: 0.55,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 8,
+    padding: SPACING.sm,
   },
   metricValue: {
-    fontSize: FONT_SIZE.large,
+    fontSize: FONT_SIZE.xlarge,
     fontWeight: 'bold',
+    marginBottom: SPACING.xs,
   },
   metricCategory: {
+    fontSize: FONT_SIZE.medium,
+    fontWeight: '600',
+    marginBottom: SPACING.xs,
+  },
+  metricDescription: {
     fontSize: FONT_SIZE.small,
+    color: '#666',
+    marginBottom: SPACING.xs,
+  },
+  metricRecommendation: {
+    fontSize: FONT_SIZE.small,
+    color: '#666',
+    fontStyle: 'italic',
+  },
+  calorieContainer: {
+    backgroundColor: '#f8f9fa',
+    borderRadius: 8,
+    padding: SPACING.sm,
+  },
+  calorieItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: SPACING.xs,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  calorieLabel: {
+    fontSize: FONT_SIZE.medium,
+    color: Colors.text,
+    fontWeight: '500',
+  },
+  calorieValue: {
+    fontSize: FONT_SIZE.medium,
+    color: Colors.secondary,
+    fontWeight: '600',
   },
   
   // Button styles
