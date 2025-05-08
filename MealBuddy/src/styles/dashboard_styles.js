@@ -279,7 +279,7 @@ export default StyleSheet.create({
   mealTitle: {
     fontSize: FONT_SIZE.large,
     fontWeight: 'bold',
-    color: Colors.primary,
+    color: '#5e2bff',
     marginBottom: SPACING.sm,
   },
   foodItem: {

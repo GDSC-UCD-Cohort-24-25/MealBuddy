@@ -32,6 +32,7 @@ import Animated, {
   FadeOut,
   SlideInUp
 } from "react-native-reanimated";
+import { calculateBMI, calculateCalorieNeeds, getActivityLevelDescription } from "../utils/health_calculations";
 
 // Interactive animated card with press feedback
 const AnimatedCard = ({ index, children }) => {
@@ -83,9 +84,6 @@ const AnimatedInfoRow = ({ label, value, delay = 0, color }) => {
     </Animated.View>
   );
 };
-
-
-
 
 const Profile = () => {
   const [user, setUser] = useState(null);
@@ -170,92 +168,84 @@ const Profile = () => {
   };
 
   // Calculate BMI and provide a category
-  const calculateBMI = () => {
-    if (!user || !user.weight || !user.height) return { value: "N/A", category: "N/A" };
-    
-    // Convert height from feet to meters (assuming height is stored as feet)
-    const heightInMeters = parseFloat(user.height) * 0.3048;
-    
-    // Convert weight from pounds to kg
-    const weightInKg = parseFloat(user.weight) * 0.453592;
-    
-    if (isNaN(heightInMeters) || isNaN(weightInKg) || heightInMeters === 0) {
-      return { value: "N/A", category: "N/A" };
+  const calculateUserBMI = (user) => {
+    if (!user || !user.weight || !user.height) {
+      return {
+        value: null,
+        category: 'N/A',
+        color: '#666',
+        description: 'Please update your height and weight in your profile',
+        recommendation: 'Add your measurements to get personalized recommendations'
+      };
     }
     
-    const bmi = weightInKg / (heightInMeters * heightInMeters);
-    const roundedBMI = Math.round(bmi * 10) / 10;
-    
-    let category;
-    let color;
-    
-    if (bmi < 18.5) {
-      category = "Underweight";
-      color = "#3498db"; // Blue
-    } else if (bmi < 25) {
-      category = "Normal";
-      color = "#2ecc71"; // Green
-    } else if (bmi < 30) {
-      category = "Overweight";
-      color = "#f39c12"; // Orange
-    } else {
-      category = "Obese";
-      color = "#e74c3c"; // Red
+    try {
+      const heightFeet = parseFloat(user.height);
+      const weightPounds = parseFloat(user.weight);
+      
+      if (isNaN(heightFeet) || isNaN(weightPounds) || heightFeet <= 0 || weightPounds <= 0) {
+        return {
+          value: null,
+          category: 'N/A',
+          color: '#666',
+          description: 'Please enter valid height and weight values',
+          recommendation: 'Height and weight must be greater than 0'
+        };
+      }
+      
+      const bmiResult = calculateBMI(heightFeet, weightPounds);
+      return {
+        value: bmiResult.value,
+        category: bmiResult.category.category,
+        color: bmiResult.category.color,
+        description: bmiResult.category.description,
+        recommendation: bmiResult.category.recommendation
+      };
+    } catch (error) {
+      console.error("BMI calculation error:", error);
+      return {
+        value: null,
+        category: 'N/A',
+        color: '#666',
+        description: 'Error calculating BMI',
+        recommendation: 'Please try updating your measurements'
+      };
     }
-    
-    return { value: roundedBMI.toString(), category, color };
   };
 
   // Calculate daily calorie needs based on activity level
-  const calculateCalorieNeeds = () => {
+  const calculateUserCalories = (user) => {
     if (!user || !user.weight || !user.height || !user.age || !user.gender) {
-      return "N/A";
+      return {
+        maintenance: null,
+        weightLoss: null,
+        weightGain: null
+      };
     }
     
-    // Convert height from feet to cm
-    const heightInCm = parseFloat(user.height) * 30.48;
-    
-    // Convert weight from pounds to kg
-    const weightInKg = parseFloat(user.weight) * 0.453592;
-    
-    const age = parseInt(user.age);
-    
-    if (isNaN(heightInCm) || isNaN(weightInKg) || isNaN(age)) {
-      return "N/A";
+    try {
+      const heightFeet = parseFloat(user.height);
+      const weightPounds = parseFloat(user.weight);
+      const age = parseInt(user.age);
+      
+      if (isNaN(heightFeet) || isNaN(weightPounds) || isNaN(age) || 
+          heightFeet <= 0 || weightPounds <= 0 || age <= 0) {
+        return {
+          maintenance: null,
+          weightLoss: null,
+          weightGain: null
+        };
+      }
+      
+      return calculateCalorieNeeds(weightPounds, heightFeet, age, user.gender, user.activityLevel);
+    } catch (error) {
+      console.error("Calorie calculation error:", error);
+      return {
+        maintenance: null,
+        weightLoss: null,
+        weightGain: null
+      };
     }
-    
-    // Mifflin-St Jeor Equation
-    let bmr;
-    if (user.gender.toLowerCase() === "male") {
-      bmr = 10 * weightInKg + 6.25 * heightInCm - 5 * age + 5;
-    } else {
-      bmr = 10 * weightInKg + 6.25 * heightInCm - 5 * age - 161;
-    }
-    
-    // Activity multiplier
-    let activityMultiplier;
-    switch (user.activityLevel) {
-      case "sedentary":
-        activityMultiplier = 1.2;
-        break;
-      case "light":
-        activityMultiplier = 1.375;
-        break;
-      case "moderate":
-        activityMultiplier = 1.55;
-        break;
-      case "active":
-        activityMultiplier = 1.725;
-        break;
-      case "very_active":
-        activityMultiplier = 1.9;
-        break;
-      default:
-        activityMultiplier = 1.55; // Default to moderate
-    }
-    
-    const calories = Math.round(bmr * activityMultiplier);
-    return calories.toString();
   };
 
   const getActivityLevelText = (level) => {
@@ -323,8 +313,8 @@ const Profile = () => {
     );
   }
 
-  const bmi = calculateBMI();
-  const calorieNeeds = calculateCalorieNeeds();
+  const bmi = calculateUserBMI(user);
+  const calorieNeeds = calculateUserCalories(user);
 
   
 
@@ -378,47 +368,67 @@ const Profile = () => {
           <ProfileHeader />
 
           {/* Sign Out Button */}
-          <Animated.View entering={FadeIn.delay(400)}>
-            <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
-              <Text style={styles.signOutText}>Sign Out</Text>
-            </TouchableOpacity>
-          </Animated.View>
+          <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
+            <Text style={styles.signOutText}>Sign Out</Text>
+          </TouchableOpacity>
 
           {user ? (
             <>
               {/* Health Metrics Card */}
-              <AnimatedCard index={0}>
+              <View style={styles.card}>
                 <View style={styles.cardHeader}>
                   <Ionicons name="fitness-outline" size={24} color={Colors.primary} />
                   <Text style={styles.cardTitle}>Health Metrics</Text>
                 </View>
-                
                 <View style={styles.cardContent}>
                   <View style={styles.metricRow}>
-                    <Text style={styles.metricLabel}>BMI</Text>
-                    <Animated.View 
-                      entering={FadeIn.delay(100).duration(300)}
-                      style={styles.metricValueContainer}
-                    >
-                      <Text style={[styles.metricValue, { color: bmi.color }]}>{bmi.value}</Text>
-                      <Text style={[styles.metricCategory, { color: bmi.color }]}>{bmi.category}</Text>
-                    </Animated.View>
+                    <Text style={styles.metricLabel}>Body Mass Index (BMI)</Text>
+                    <View style={styles.metricValueContainer}>
+                      <Text style={[styles.metricValue, { color: bmi.color }]}>
+                        {typeof bmi.value === 'number' ? bmi.value.toFixed(1) : 'N/A'}
+                      </Text>
+                      <Text style={[styles.metricCategory, { color: bmi.color }]}>
+                        {bmi.category || 'N/A'}
+                      </Text>
+                      <Text style={styles.metricDescription}>
+                        {bmi.description || 'Please update your height and weight in your profile'}
+                      </Text>
+                      <Text style={styles.metricRecommendation}>
+                        {bmi.recommendation || 'Add your measurements to get personalized recommendations'}
+                      </Text>
+                    </View>
                   </View>
                   
-                  <Animated.View 
-                    entering={FadeIn.delay(200).duration(300)}
-                    style={styles.metricRow}
-                  >
-                    <Text style={styles.metricLabel}>Daily Calories</Text>
-                    <Text style={styles.metricValue}>{calorieNeeds} kcal</Text>
-                  </Animated.View>
+                  <View style={styles.metricRow}>
+                    <Text style={styles.metricLabel}>Recommended Daily Calories</Text>
+                    <View style={styles.calorieContainer}>
+                      <View style={styles.calorieItem}>
+                        <Text style={styles.calorieLabel}>Maintenance</Text>
+                        <Text style={styles.calorieValue}>
+                          {typeof calorieNeeds.maintenance === 'number' ? `${calorieNeeds.maintenance} kcal/day` : 'N/A'}
+                        </Text>
+                      </View>
+                      <View style={styles.calorieItem}>
+                        <Text style={styles.calorieLabel}>Weight Loss</Text>
+                        <Text style={styles.calorieValue}>
+                          {typeof calorieNeeds.weightLoss === 'number' ? `${calorieNeeds.weightLoss} kcal/day` : 'N/A'}
+                        </Text>
+                      </View>
+                      <View style={styles.calorieItem}>
+                        <Text style={styles.calorieLabel}>Weight Gain</Text>
+                        <Text style={styles.calorieValue}>
+                          {typeof calorieNeeds.weightGain === 'number' ? `${calorieNeeds.weightGain} kcal/day` : 'N/A'}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
                 </View>
-              </AnimatedCard>
+              </View>
 
               {/* Personal Information Card */}
               <AnimatedCard index={1}>
                 <View style={styles.cardHeader}>
-                  <Ionicons name="person-outline" size={24} color={Colors.primary} />
+                  <Ionicons name="person-outline" size={24} color={'#5e2bff'} />
                   <Text style={styles.cardTitle}>Personal Information</Text>
                 </View>
                 
@@ -433,7 +443,7 @@ const Profile = () => {
               {/* Preferences Card */}
               <AnimatedCard index={2}>
                 <View style={styles.cardHeader}>
-                  <Ionicons name="options-outline" size={24} color={Colors.primary} />
+                  <Ionicons name="options-outline" size={24} color={'#5e2bff'} />
                   <Text style={styles.cardTitle}>Preferences</Text>
                 </View>
                 
