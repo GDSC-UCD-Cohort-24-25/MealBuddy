@@ -153,4 +153,75 @@ export default StyleSheet.create({
     opacity: 0,
   },
 
+  shorterInput: {
+    height: 40,
+  },
+  recipesContainer: {
+    marginTop: SPACING.lg,
+  },
+  recipeCard: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: SPACING.md,
+    marginBottom: SPACING.lg,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  recipeHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: SPACING.sm,
+  },
+  recipeTitle: {
+    fontSize: FONT_SIZE.large,
+    fontWeight: 'bold',
+    color: Colors.text,
+  },
+  recipeDescription: {
+    fontSize: FONT_SIZE.medium,
+    color: Colors.text,
+    marginBottom: SPACING.sm,
+  },
+  recipeDetails: {
+    fontSize: FONT_SIZE.small,
+    color: Colors.text,
+  },
+  sectionTitle: {
+    fontSize: FONT_SIZE.medium,
+    fontWeight: 'bold',
+    marginTop: SPACING.md,
+    marginBottom: SPACING.sm,
+    color: Colors.text,
+  },
+  ingredientText: {
+    fontSize: FONT_SIZE.small,
+    color: Colors.text,
+    marginBottom: SPACING.xs,
+  },
+  stepText: {
+    fontSize: FONT_SIZE.small,
+    color: Colors.text,
+    marginBottom: SPACING.xs,
+  },
+  nutritionText: {
+    fontSize: FONT_SIZE.small,
+    color: Colors.text,
+    marginBottom: SPACING.xs,
+  },
+  makeRecipeButton: {
+    marginTop: SPACING.md,
+    backgroundColor: '#5e2bff',
+    paddingVertical: SPACING.sm,
+    borderRadius: 25,
+    alignItems: 'center',
+  },
+  makeRecipeButtonText: {
+    color: '#fff',
+    fontSize: FONT_SIZE.medium,
+    fontWeight: 'bold',
+  },
 });

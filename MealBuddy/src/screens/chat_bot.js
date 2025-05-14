@@ -9,35 +9,23 @@ import {
   KeyboardAvoidingView, 
   Platform,
   Linking,
-  Image,
-  ImageBackground
+  ScrollView,
+  Alert
 } from 'react-native';
 import styles from '../styles/chatbot_styles';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withSpring,
-  withDelay,
-  FadeIn,
-  FadeOut,
-  SlideInRight,
-  SlideInLeft
-} from 'react-native-reanimated';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { GOOGLE_GEMINI_API_KEY, YOUTUBE_API_KEY } from '@env';
 import { db, auth } from '../services/firebase_config';
-import { collection, onSnapshot } from 'firebase/firestore';
+import { collection, onSnapshot, doc, deleteDoc, addDoc, getDocs, query, where } from 'firebase/firestore';
 import axios from 'axios';
-
 
 const Chatbot = () => {
   const [input, setInput] = useState('');
-  const [messages, setMessages] = useState([]); // All chat messages are stored here.
+  const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [fridgeItems, setFridgeItems] = useState([]);
-
-  // Reference to the ScrollView.
+  const [currentRecipes, setCurrentRecipes] = useState([]);
+  const [expandedRecipe, setExpandedRecipe] = useState(null);
   const scrollViewRef = useRef();
 
   // Typewriter effect: gradually reveal text in the last message.
@@ -85,7 +73,7 @@ const Chatbot = () => {
   const showInitialGreeting = () => {
     setLoading(true);
     setTimeout(() => {
-      const greeting = "Hello! I'm your MealBuddy chatbot. Tell me what ingredients you have, and I'll suggest recipes!";
+      const greeting = "Hello! I'm your MealBuddy chatbot. Ask me what meals you can make with your ingredients!";
       const newMessage = { id: Date.now().toString(), text: greeting, isUser: false };
       setMessages([newMessage]);
       setLoading(false);
@@ -96,6 +84,8 @@ const Chatbot = () => {
   const resetChatbot = () => {
     setMessages([]);
     setInput('');
+    setCurrentRecipes([]);
+    setExpandedRecipe(null);
     showInitialGreeting();
   };
 
@@ -117,7 +107,10 @@ const Chatbot = () => {
         console.warn("⚠️ No ingredients found in Firestore.");
         setFridgeItems([]);
       } else {
-        const items = snapshot.docs.map(doc => doc.data().name || "Unknown Ingredient");
+        const items = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
         console.log("🔹 Updated fridge items:", items);
         setFridgeItems(items);
       }
@@ -148,11 +141,176 @@ const Chatbot = () => {
   const genAI = new GoogleGenerativeAI(GOOGLE_GEMINI_API_KEY);
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-  // Send user message to chatbot with typewriter effect on response.
+  const addMealToNutrition = async (recipe) => {
+    if (!auth.currentUser) return;
+    
+    try {
+      const userId = auth.currentUser.uid;
+      const mealData = {
+        name: recipe.title,
+        calories: recipe.calories || 0,
+        protein: recipe.protein || 0,
+        total_fat: recipe.fats || 0,
+        water: recipe.water || 0,
+        sugar: recipe.sugar || 0,
+        mealCategory: recipe.mealCategory || 'dinner',
+        timestamp: new Date().toISOString()
+      };
+
+      await addDoc(collection(db, 'users', userId, 'meals'), mealData);
+      Alert.alert('Success', 'Meal added to your nutrition tracker!');
+    } catch (error) {
+      console.error('Error adding meal:', error);
+      Alert.alert('Error', 'Failed to add meal to nutrition tracker.');
+    }
+  };
+
+  const removeIngredientsFromFridge = async (ingredients) => {
+    if (!auth.currentUser) return;
+    
+    try {
+      const userId = auth.currentUser.uid;
+      const ingredientsRef = collection(db, 'users', userId, 'ingredients');
+      
+      for (const ingredient of ingredients) {
+        const q = query(ingredientsRef, where('name', '==', ingredient));
+        const querySnapshot = await getDocs(q);
+        querySnapshot.forEach(async (doc) => {
+          await deleteDoc(doc.ref);
+        });
+      }
+      
+      Alert.alert('Success', 'Ingredients removed from your fridge!');
+    } catch (error) {
+      console.error('Error removing ingredients:', error);
+      Alert.alert('Error', 'Failed to remove ingredients from fridge.');
+    }
+  };
+
+  const handleRecipeConfirmation = async (recipe) => {
+    if (!recipe) return;
+    
+    try {
+      await addMealToNutrition(recipe);
+      await removeIngredientsFromFridge(recipe.ingredients);
+      setCurrentRecipes([]);
+      setExpandedRecipe(null);
+      
+      const confirmationMsg = { 
+        id: Date.now().toString(), 
+        text: "Great! I've added the meal to your nutrition tracker and removed the used ingredients from your fridge. Enjoy your meal! 😊", 
+        isUser: false 
+      };
+      setMessages(prev => [...prev, confirmationMsg]);
+    } catch (error) {
+      console.error('Error handling recipe confirmation:', error);
+      Alert.alert('Error', 'Something went wrong while processing your recipe.');
+    }
+  };
+
+  const parseRecipes = (recipeText) => {
+    const recipes = [];
+    const recipeSections = recipeText.split('---').filter(section => section.trim().length > 0);
+    
+    recipeSections.forEach(section => {
+      const lines = section.split('\n');
+      const recipe = {
+        title: '',
+        description: '',
+        ingredients: [],
+        steps: [],
+        calories: 0,
+        protein: 0,
+        fats: 0
+      };
+
+      lines.forEach(line => {
+        if (line.startsWith('Title:')) {
+          recipe.title = line.replace('Title:', '').trim();
+        } else if (line.startsWith('Description:')) {
+          recipe.description = line.replace('Description:', '').trim();
+        } else if (line.startsWith('Ingredients:')) {
+          const ingredients = line.replace('Ingredients:', '').trim();
+          recipe.ingredients = ingredients.split(',').map(i => i.trim());
+        } else if (line.startsWith('Steps:')) {
+          const steps = line.replace('Steps:', '').trim();
+          recipe.steps = steps.split(',').map(s => s.trim());
+        } else if (line.startsWith('Calories:')) {
+          recipe.calories = parseInt(line.replace('Calories:', '').trim()) || 0;
+        } else if (line.startsWith('Protein:')) {
+          recipe.protein = parseInt(line.replace('Protein:', '').trim()) || 0;
+        } else if (line.startsWith('Fats:')) {
+          recipe.fats = parseInt(line.replace('Fats:', '').trim()) || 0;
+        }
+      });
+
+      recipes.push(recipe);
+    });
+
+    return recipes;
+  };
+
+  const renderRecipeCard = (recipe, index) => {
+    const isExpanded = expandedRecipe === index;
+    const recipeKey = `recipe-${recipe.title.replace(/\\s+/g, '-')}-${index}`;
+    
+    return (
+      <View key={recipeKey} style={styles.recipeCard}>
+        <TouchableOpacity 
+          onPress={() => setExpandedRecipe(isExpanded ? null : index)}
+          style={styles.recipeHeader}
+        >
+          <Text style={styles.recipeTitle}>{recipe.title}</Text>
+          <Ionicons 
+            name={isExpanded ? "chevron-up" : "chevron-down"} 
+            size={24} 
+            color="#007bff" 
+          />
+        </TouchableOpacity>
+        
+        <Text style={styles.recipeDescription}>{recipe.description}</Text>
+        
+        {isExpanded && (
+          <View style={styles.recipeDetails}>
+            <Text style={styles.sectionTitle}>Ingredients:</Text>
+            {recipe.ingredients.map((ingredient, i) => (
+              <Text 
+                key={`${recipeKey}-ingredient-${ingredient.replace(/\s+/g, '-')}-${i}`} 
+                style={styles.ingredientText}
+              >
+                • {ingredient}
+              </Text>
+            ))}
+            
+            <Text style={styles.sectionTitle}>Steps:</Text>
+            {recipe.steps.map((step, i) => (
+              <Text 
+                key={`${recipeKey}-step-${i}-${Date.now()}`} 
+                style={styles.stepText}
+              >
+                {i + 1}. {step}
+              </Text>
+            ))}
+            
+            <Text style={styles.nutritionText}>
+              Calories: {recipe.calories} kcal | Protein: {recipe.protein}g | Fats: {recipe.fats}g
+            </Text>
+            
+            <TouchableOpacity 
+              style={styles.makeRecipeButton}
+              onPress={() => handleRecipeConfirmation(recipe)}
+            >
+              <Text style={styles.makeRecipeButtonText}>Make this recipe</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+    );
+  };
+
   const sendMessage = async () => {
     if (!input.trim()) return;
     const lowerInput = input.toLowerCase();
-    // Append user's message.
     const userMsg = { id: Date.now().toString(), text: input, isUser: true };
     setMessages(prev => [...prev, userMsg]);
     setInput('');
@@ -161,61 +319,73 @@ const Chatbot = () => {
     try {
       let responseText = '';
 
-      if (lowerInput.includes("what meals can i make")) {
-        console.log("🔍 Checking fridge contents:", fridgeItems);
+      // Triggers for any recipe-related request
+      const recipeTriggers = [
+        'make',
+        'cook',
+        'recipe',
+        'recipes',
+        'what can i make',
+        'what meals can i make',
+        'what to cook',
+        'suggest a recipe',
+        'give me some recipes',
+        'meal',
+      ];
+      const isRecipeRequest = recipeTriggers.some(trigger => lowerInput.includes(trigger));
+
+      if (isRecipeRequest) {
         if (fridgeItems.length === 0) {
           responseText = "I cannot see anything in your fridge! Please add ingredients first.";
         } else {
-          const ingredientList = fridgeItems.map(item => `• **${item}**`).join("\n");
-          responseText = `I see you have:\n${ingredientList}\n\nHere are some meal ideas:\n`;
-          const prompt = `I have these ingredients: ${ingredientList}. Please suggest 3 creative and diverse meal recipes using only these ingredients. For each recipe, do the following:
-1. Start with "Recipe X:" (where X is 1, 2, 3).
-2. Provide a bold title for the recipe.
-3. List the required ingredients with specific quantities (in grams).
-4. Provide a detailed, step-by-step cooking process with timings (e.g., preheat, cook for X minutes, etc.) and a serving suggestion.
-Separate each recipe with a line containing only "---".`;
+          const ingredientList = fridgeItems.map(item => item.name).join(", ");
+          const prompt = `Given ONLY these ingredients in the fridge: ${ingredientList}, suggest THREE simple recipes that use ONLY these ingredients. IMPORTANT: DO NOT suggest any recipes that require ingredients not in this list. For each recipe, format as follows:
+---\nTitle: [Recipe Name]\nDescription: [One sentence description of the recipe]\nIngredients: [List ONLY ingredients from the provided list, no substitutions]\nSteps: [3-4 simple steps using ONLY the listed ingredients]\nCalories: [estimated calories]\nProtein: [estimated protein in grams]\nFats: [estimated fats in grams]\n---\nSeparate each recipe with "---". Remember: ONLY use ingredients from the provided list.`;
 
-          const requestPayload = {
-            contents: [
-              {
-                role: "user",
-                parts: [{ text: prompt }]
-              }
-            ]
-          };
+          const result = await model.generateContent({
+            contents: [{ role: "user", parts: [{ text: prompt }] }]
+          });
+          
+          const recipeText = result.response.text();
+          const recipes = parseRecipes(recipeText);
+          
+          // Verify that recipes only use ingredients from the fridge
+          const validRecipes = recipes.filter(recipe => {
+            const recipeIngredients = recipe.ingredients.map(i => i.toLowerCase().replace(/[^a-z]/g, ''));
+            const fridgeIngredients = fridgeItems.map(i => i.name.toLowerCase().replace(/[^a-z]/g, ''));
+            return recipeIngredients.every(ingredient =>
+              fridgeIngredients.some(fridgeIngredient =>
+                fridgeIngredient.includes(ingredient) || ingredient.includes(fridgeIngredient)
+              )
+            );
+          });
 
-          const result = await model.generateContent(requestPayload);
-          const recipeText = result.response.text() || "No recipes found.";
-          // Split the recipes using the delimiter.
-          const recipeSections = recipeText.split('---').map(section => section.trim()).filter(section => section.length > 0);
-          let finalRecipesText = "";
-          for (let i = 0; i < recipeSections.length; i++) {
-            let section = recipeSections[i];
-            const titleMatch = section.match(/(?:\*\*)([^*]+)(?:\*\*)/);
-            let recipeTitle = titleMatch ? titleMatch[1] : `Recipe ${i+1}`;
-            const videoLink = await fetchYouTubeVideo(recipeTitle);
-            section += `\n\n🔗 Watch ${recipeTitle}: ${videoLink ? videoLink : "No video found"}`;
-            finalRecipesText += section + "\n";
+          if (validRecipes.length === 0) {
+            responseText = "I couldn't find any recipes using only your current ingredients. Try adding more ingredients to your fridge!";
+          } else {
+            setCurrentRecipes(validRecipes);
+            responseText = "Here are recipes you can make with your current ingredients:\n\n";
+            validRecipes.forEach((recipe, index) => {
+              responseText += `${index + 1}. ${recipe.title}\n`;
+              responseText += `${recipe.description}\n\n`;
+            });
+            responseText += "Tap on any recipe to see the full details and make it!";
           }
-          responseText += finalRecipesText;
-          responseText += "\nLet me know if you need anything else.";
         }
       } else if (lowerInput.includes("what do i have in the fridge") || lowerInput.includes("my fridge")) {
         if (fridgeItems.length === 0) {
           responseText = "Your fridge is empty! Please add some ingredients.";
         } else {
-          const ingredientList = fridgeItems.map(item => `• **${item}**`).join("\n");
+          const ingredientList = fridgeItems.map(item => `• **${item.name}**`).join("\n");
           responseText = `You currently have:\n${ingredientList}\n\nLet me know if you need anything else.`;
         }
       } else {
         const result = await model.generateContent({
           contents: [{ role: "user", parts: [{ text: input }] }]
         });
-        responseText = result.response.text() || "No response from Gemini.";
-        responseText += "\n\nLet me know if you need anything else.";
+        responseText = result.response.text() || "I'm not sure how to help with that. Try asking about recipes or your fridge contents.";
       }
 
-      // Append a blank bot message, then use the typewriter effect.
       const newBotMsg = { id: Date.now().toString(), text: "", isUser: false };
       setMessages(prev => [...prev, newBotMsg]);
       typeMessage(responseText);
@@ -228,136 +398,73 @@ Separate each recipe with a line containing only "---".`;
     }
   };
 
-  // Animated send button scale for press effect
-  const buttonScale = useSharedValue(1);
-  
-  const onPressIn = () => {
-    buttonScale.value = withSpring(0.95, { damping: 10, stiffness: 100 });
-  };
-  
-  const onPressOut = () => {
-    buttonScale.value = withSpring(1, { damping: 10, stiffness: 100 });
-  };
-  
-  const animatedButtonStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: buttonScale.value }]
-    };
-  });
-  
-  // Render messages with clickable links, highlighted text and animations
-  const renderMessage = (message, index) => {
+  const renderMessage = (message) => {
     const linkRegex = /(https?:\/\/[^\s]+)/g;
     const parts = message.text.split(linkRegex);
-    const isUser = message.isUser;
-    
-    // Different animation based on user/bot message
-    const enteringAnimation = isUser 
-      ? SlideInRight.delay(50).springify()
-      : SlideInLeft.delay(50).springify();
+    const messageKey = `message-${message.id}-${Date.now()}`;
     
     return (
-      <Animated.View
-        key={message.id}
-        entering={enteringAnimation}
-        style={{
-          flexDirection: isUser ? 'row-reverse' : 'row',
-          alignItems: 'flex-start',
-          marginBottom: 12,
-          paddingHorizontal: 10,
-        }}
-      >
-        {!isUser && (
-          <Animated.Image
-            entering={FadeIn.delay(100).duration(300)}
-            source={require('../../images/mealbuddy_icon.png')}
-            style={styles.avatarIcon}
-          />
+      <View key={messageKey} style={[styles.messageBubble, message.isUser ? styles.userBubble : styles.botBubble]}>
+        {parts.map((part, index) =>
+          linkRegex.test(part) ? (
+            <TouchableOpacity 
+              key={`${messageKey}-link-${index}-${Date.now()}`} 
+              onPress={() => Linking.openURL(part)}
+            >
+              <Text style={[styles.messageText, styles.linkText]}>{part}</Text>
+            </TouchableOpacity>
+          ) : (
+            <Text 
+              key={`${messageKey}-text-${index}-${Date.now()}`} 
+              style={[styles.messageText, message.isUser ? styles.userText : styles.botText]}
+            >
+              {renderHighlightedText(part)}
+            </Text>
+          )
         )}
         
-        <Animated.View 
-          style={[styles.messageBubble, isUser ? styles.userBubble : styles.botBubble]}
-        >
-          {parts.map((part, idx) =>
-            linkRegex.test(part) ? (
-              <TouchableOpacity key={idx} onPress={() => Linking.openURL(part)}>
-                <Text style={[styles.messageText, styles.linkText]}>{part}</Text>
-              </TouchableOpacity>
-            ) : (
-              <Text key={idx} style={[styles.messageText, isUser ? styles.userText : styles.botText]}>
-                {renderHighlightedText(part)}
-              </Text>
-            )
-          )}
-        </Animated.View>
-      </Animated.View>
+        {!message.isUser && currentRecipes.length > 0 && (
+          <View style={styles.recipesContainer}>
+            {currentRecipes.map((recipe, index) => renderRecipeCard(recipe, index))}
+          </View>
+        )}
+      </View>
     );
   };
 
   return (
-    <ImageBackground
-      source={require('../../images/background.png')}
-      resizeMode="cover"
-      style={styles.background}
-      imageStyle={{ opacity: 0.3 }}
+    <KeyboardAvoidingView 
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+      style={styles.container}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 50} 
     >
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
-        style={styles.container}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 50} 
+      <ScrollView
+        ref={scrollViewRef}
+        contentContainerStyle={styles.messageListContent}
+        onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
       >
-        <Animated.ScrollView
-          ref={scrollViewRef}
-          contentContainerStyle={styles.messageListContent}
-          onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
-        >
-          {messages.map((message, index) => renderMessage(message, index))}
-        </Animated.ScrollView>
-        
-        {loading && (
-          <Animated.View 
-            entering={FadeIn.duration(200)}
-            exiting={FadeOut.duration(200)}
-            style={{ alignItems: 'center', marginVertical: 10 }}
-          >
-            <ActivityIndicator size="large" color="#5e2bff" />
-          </Animated.View>
-        )}
-        
-        {/* Reset Chat Button */}
-        <Animated.View
-          entering={FadeIn.delay(600).duration(500)}
-        >
-          <TouchableOpacity style={styles.resetButton} onPress={resetChatbot}>
-            <Ionicons name="refresh-circle" size={36} color="#5e2bff" />
-          </TouchableOpacity>
-        </Animated.View>
+        {messages.map(message => renderMessage(message))}
+      </ScrollView>
+      {loading && <ActivityIndicator size="large" color="#007bff" />}
 
-        <Animated.View 
-          style={styles.inputContainer}
-          entering={FadeIn.delay(300).duration(500)}
-        >
-          <TextInput
-            placeholder="Ask me anything about cooking..."
-            value={input}
-            onChangeText={setInput}
-            style={styles.input}
-            returnKeyType="send"
-          />
-          
-          <Animated.View style={animatedButtonStyle}>
-            <TouchableOpacity 
-              style={styles.sendButton} 
-              onPress={sendMessage}
-              onPressIn={onPressIn}
-              onPressOut={onPressOut}
-            >
-              <Text style={styles.sendButtonText}>Send</Text>
-            </TouchableOpacity>
-          </Animated.View>
-        </Animated.View>
-      </KeyboardAvoidingView>
-    </ImageBackground>
+      {/* Reset Chat Button */}
+      <TouchableOpacity style={styles.resetButton} onPress={resetChatbot}>
+        <Ionicons name="refresh-circle" size={36} color="#007bff" />
+      </TouchableOpacity>
+
+      <View style={styles.inputContainer}>
+        <TextInput
+          placeholder="Ask me anything about cooking..."
+          value={input}
+          onChangeText={setInput}
+          style={styles.input}
+          returnKeyType="send"
+        />
+        <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
+          <Text style={styles.sendButtonText}>Send</Text>
+        </TouchableOpacity>
+      </View>
+    </KeyboardAvoidingView>
   );
 };
 
