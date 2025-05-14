@@ -8,6 +8,7 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
+  Image,
 } from "react-native";
 import { db, auth } from "../services/firebase_config";
 import { collection, query, orderBy, onSnapshot, deleteDoc, doc } from "firebase/firestore";
@@ -74,16 +75,27 @@ const YourFridge = () => {
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <View style={styles.item}>
-              <Text style={styles.ingredientText}>{item.name} ({item.serving_size})</Text>
-              <Text style={styles.nutritionText}>🔥 Calories: {item.calories}kcal</Text>
-              <Text style={styles.nutritionText}>💪 Protein: {item.protein}g</Text>
-              <Text style={styles.nutritionText}>🍗 Fat: {item.total_fat}g</Text>
-              <Text style={styles.nutritionText}>💧 Water: {item.water}ml</Text>
-              <Text style={styles.nutritionText}>🍭 Sugar: {isNaN(item.sugar) ? 0 : item.sugar}g</Text>
-              <TouchableOpacity onPress={() => handleDelete(item.id)}>
-                <MaterialIcons name="delete" size={24} color="red" />
-              </TouchableOpacity>
-            </View>
+              <View style={styles.imageAndText}>
+                <Image
+                  source={{ uri: item.image_url || 'https://dummyimage.com/100x100/cccccc/000000&text=Food' }}
+                  style={styles.foodImage}
+                />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.ingredientText}>{item.name} ({item.serving_size})</Text>
+                  <Text style={styles.nutritionText}>🔥 Calories: {item.calories}kcal</Text>
+                  <Text style={styles.nutritionText}>💪 Protein: {item.protein}g</Text>
+                  <Text style={styles.nutritionText}>🍗 Fat: {item.total_fat}g</Text>
+                  <Text style={styles.nutritionText}>💧 Water: {item.water}ml</Text>
+                  <Text style={styles.nutritionText}>🍭 Sugar: {isNaN(item.sugar) ? 0 : item.sugar}g</Text>
+                  {item.tags && (
+                    <Text style={styles.nutritionText}>🏷️ Tags: {item.tags.join(', ')}</Text>
+                  )}
+                </View>
+              </View>
+            <TouchableOpacity onPress={() => handleDelete(item.id)}>
+              <MaterialIcons name="delete" size={24} color="red" />
+            </TouchableOpacity>
+          </View>
           )}
         />
       )}
@@ -129,6 +141,16 @@ const styles = StyleSheet.create({
     marginTop: 20,
     fontSize: 16,
     color: "#888",
+  },
+  foodImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 6,
+    marginRight: 10,
+  },
+  imageAndText: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 });
 

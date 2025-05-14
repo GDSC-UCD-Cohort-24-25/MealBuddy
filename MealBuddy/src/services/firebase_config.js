@@ -18,13 +18,13 @@ const firebaseConfig = {
 };**/
 
 const firebaseConfig = {
-  apiKey: //fill,
-  authDomain: //fill,
-  projectId: //fill,
-  storageBucket: //fill,
-  messagingSenderId: //fill,
-  appId: //fill,
-  measurementId: //fill
+  apiKey: "AIzaSyCBDIK6X1vlOo2u35_GnGzRxDHVK1oSMpc",
+  authDomain: "mealbuddy-fc58e.firebaseapp.com",
+  projectId: "mealbuddy-fc58e",
+  storageBucket: "mealbuddy-fc58e.firebasestorage.app",
+  messagingSenderId: "148790347661",
+  appId: "1:148790347661:web:a349a4d42302a40d529fc4",
+  measurementId: "G-PSXTGBZW8F"
 };
 
 // Initialize Firebase app
