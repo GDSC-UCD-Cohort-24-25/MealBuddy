@@ -77,7 +77,6 @@ Over one-third of U.S. consumers (38%) frequently don't know what to make at mea
 
 3. **Create your .env**
    
-   Copy .env.example → .env and fill in:
    ```
    GOOGLE_GEMINI_API_KEY=your_gemini_key
    YOUTUBE_API_KEY=your_youtube_key
