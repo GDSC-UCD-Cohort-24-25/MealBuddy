@@ -1,8 +1,12 @@
-![MealBuddy Logo](./MealBuddy/images/mealbuddy_icon.png)
+<p align="center">
+  <img src="./MealBuddy/images/mealbuddy_icon.png" alt="MealBuddy Logo" width="200"/>
+</p>
 
-# MealBuddy – AI-Powered Meal Planning App
+<h1 align="center">MealBuddy – AI-Powered Meal Planning App</h1>
 
-An AI health planning app that helps you track ingredients, get personalized recipe suggestions, and monitor your nutrition.
+<p align="center">
+  An AI health planning app that helps you track ingredients, get personalized recipe suggestions, and monitor your nutrition.
+</p>
 
 ---
 
