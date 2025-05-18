@@ -5,8 +5,8 @@ import styles from '../styles/dashboard_styles';
 import Colors from '../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import { db, auth } from '../services/firebase_config';
-import { collection, onSnapshot, doc, getDoc } from 'firebase/firestore';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { collection, onSnapshot, doc, getDoc, query, orderBy } from 'firebase/firestore';
+import { useNavigation } from '@react-navigation/native';
 import Animated, {
   useAnimatedScrollHandler,
   useSharedValue,
@@ -14,10 +14,9 @@ import Animated, {
   interpolate,
   withTiming,
   withSpring,
+  withDelay,
   FadeIn,
-  FadeOut,
   SlideInUp,
-  SlideInRight
 } from 'react-native-reanimated';
 
 const roundToOneDecimal = (value) => Math.round(value * 10) / 10;
@@ -33,8 +32,6 @@ const AnimatedCard = ({ index, children, style }) => {
     </Animated.View>
   );
 };
-
-
 
 const Dashboard = () => {
   const scrollY = useSharedValue(0);
@@ -57,6 +54,33 @@ const Dashboard = () => {
   const [firstName, setFirstName] = useState('');
   const [currentDate, setCurrentDate] = useState('');
 
+  // State for logged meals fetched from 'meals' collection
+  const [loggedMeals, setLoggedMeals] = useState([]);
+  const [groupedLoggedMeals, setGroupedLoggedMeals] = useState({
+      Breakfast: [],
+      Lunch: [],
+      Dinner: [],
+      Snack: []
+  });
+
+  // State for ingredients fetched from 'ingredients' collection
+  const [fridgeIngredients, setFridgeIngredients] = useState([]); // Renamed for clarity
+
+  const [totals, setTotals] = useState({
+    calories: 0,
+    protein: 0,
+    sugar: 0,
+    fats: 0,
+    water: 0,
+    carbs: 0,
+  });
+  const [mealIngredients, setMealIngredients] = useState({
+    breakfast: [],
+    lunch: [],
+    dinner: [],
+    snack: [],
+  });
+
   useEffect(() => {
     const today = new Date();
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
@@ -76,55 +100,78 @@ const Dashboard = () => {
   }, []);
 
 
-  const [totals, setTotals] = useState({
-    calories: 0,
-    protein: 0,
-    sugar: 0,
-    fats: 0,
-    water: 0,
-  });
-  const [mealIngredients, setMealIngredients] = useState({
-    breakfast: [],
-    lunch: [],
-    dinner: [],
-    snack: [],
-  });
-
+  // Listener for Fridge Ingredients
   useEffect(() => {
     if (!auth.currentUser) return;
     const userId = auth.currentUser.uid;
     const ingredientsRef = collection(db, 'users', userId, 'ingredients');
-    const safeValue = (value) => (isNaN(value) || value === null ? 0 : value);
 
     const unsubscribe = onSnapshot(ingredientsRef, (snapshot) => {
-      setMealCount(snapshot.size);
+      const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      console.log("🔹 Updated fridge ingredients:", items);
+      setFridgeIngredients(items); // Update the dedicated state for ingredients
+    });
+
+    return () => unsubscribe();
+  }, [auth.currentUser]);
+
+  // Listener for Logged Meals
+  useEffect(() => {
+      if (!auth.currentUser) return;
+      const userId = auth.currentUser.uid;
+      const mealsRef = collection(db, 'users', userId, 'meals');
+      // Order meals by timestamp to show recent ones first
+      const q = query(mealsRef, orderBy('timestamp', 'desc'));
+
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+          const mealsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          console.log("🔹 Updated logged meals:", mealsData); // Keep logging here
+          setLoggedMeals(mealsData);
+          // Grouping for display will happen in the totals effect
+          // setGroupedLoggedMeals(grouped); // Moved grouping
+      }, (error) => {
+          console.error("🔥 Error fetching logged meals:", error);
+      });
+
+      return () => unsubscribe();
+  }, [auth.currentUser]);
+
+  // EFFECT TO CALCULATE TOTALS AND GROUP FRIDGE INGREDIENTS
+  useEffect(() => {
+      console.log("🔄 Recalculating totals and grouping fridge ingredients...");
+      console.log("Current fridgeIngredients state:", fridgeIngredients.length, fridgeIngredients); // Log ingredients state
+      console.log("Current loggedMeals state:", loggedMeals.length, loggedMeals); // Log meals state
+
+      const safeValue = (value) => (isNaN(value) || value === null ? 0 : value);
+
       let newTotals = {
         calories: 0,
         protein: 0,
         sugar: 0,
         fats: 0,
         water: 0,
-      };
-      const newMealIngredients = {
-        breakfast: [],
-        lunch: [],
-        dinner: [],
-        snack: [],
+        carbs: 0,
       };
 
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-        newTotals.calories += safeValue(data.calories);
-        newTotals.protein += safeValue(data.protein);
-        newTotals.sugar += safeValue(data.sugar);
-        newTotals.fats += safeValue(data.total_fat);
-        newTotals.water += safeValue(data.water);
-
-        // Group ingredients by meal category
-        if (data.mealCategory && newMealIngredients[data.mealCategory]) {
-          newMealIngredients[data.mealCategory].push(data);
-        }
+      // Sum up macros from Fridge Ingredients
+      fridgeIngredients.forEach(item => {
+        newTotals.calories += safeValue(item.calories);
+        newTotals.protein += safeValue(item.protein);
+        newTotals.sugar += safeValue(item.sugar);
+        newTotals.fats += safeValue(item.total_fat || item.fats);
+        newTotals.water += safeValue(item.water);
       });
+       console.log("Totals after processing fridgeIngredients:", newTotals); // Log intermediate total
+
+      // Sum up macros from Logged Meals
+      loggedMeals.forEach(meal => {
+          newTotals.calories += safeValue(meal.calories);
+          newTotals.protein += safeValue(meal.protein);
+          newTotals.fats += safeValue(meal.total_fat || meal.fats);
+          newTotals.carbs += safeValue(meal.carbs);
+      });
+      console.log("Totals after processing loggedMeals:", newTotals); // Log final total before setting state
+
 
       setTotals({
         calories: roundToOneDecimal(newTotals.calories),
@@ -132,51 +179,52 @@ const Dashboard = () => {
         sugar: roundToOneDecimal(newTotals.sugar),
         fats: roundToOneDecimal(newTotals.fats),
         water: roundToOneDecimal(newTotals.water),
+        carbs: roundToOneDecimal(newTotals.carbs),
       });
-      setMealIngredients(newMealIngredients);
-    });
+       console.log("✅ Totals state updated.");
 
-    return () => unsubscribe();
-  }, []);
 
-  // Pie chart data
-  const pieChartData = [
-    {
-      name: 'Calories',
-      population: totals.calories,
-      color: Colors.calories,
-      legendFontColor: '#7F7F7F',
-      legendFontSize: 12,
-    },
-    {
-      name: 'Water Intake',
-      population: totals.water,
-      color: Colors.water,
-      legendFontColor: '#7F7F7F',
-      legendFontSize: 12,
-    },
-    {
-      name: 'Protein',
-      population: totals.protein,
-      color: Colors.protein,
-      legendFontColor: '#7F7F7F',
-      legendFontSize: 12,
-    },
-    {
-      name: 'Sugar',
-      population: totals.sugar,
-      color: Colors.carbs,
-      legendFontColor: '#7F7F7F',
-      legendFontSize: 12,
-    },
-    {
-      name: 'Fats',
-      population: totals.fats,
-      color: Colors.fats,
-      legendFontColor: '#7F7F7F',
-      legendFontSize: 12,
-    },
-  ];
+      // Update mealCount based on both ingredients and logged meals
+      setMealCount(fridgeIngredients.length + loggedMeals.length);
+       console.log("✅ Meal count updated:", fridgeIngredients.length + loggedMeals.length);
+
+
+       // Group fridge ingredients by meal category for display
+       const newMealIngredients = {
+         breakfast: [],
+         lunch: [],
+         dinner: [],
+         snack: [],
+       };
+       fridgeIngredients.forEach((doc) => {
+         const data = doc;
+         if (data.mealCategory && newMealIngredients[data.mealCategory.toLowerCase()]) {
+           newMealIngredients[data.mealCategory.toLowerCase()].push(data);
+         }
+       });
+       setMealIngredients(newMealIngredients);
+        console.log("✅ Fridge ingredients grouped for display.");
+
+
+       // Group logged meals by category for display (Moved from the loggedMeals listener)
+       const newGroupedLoggedMeals = {
+           Breakfast: [],
+           Lunch: [],
+           Dinner: [],
+           Snack: []
+       };
+       loggedMeals.forEach(meal => {
+           if (meal.category && newGroupedLoggedMeals[meal.category]) {
+               newGroupedLoggedMeals[meal.category].push(meal);
+           } else {
+               console.warn("Meal found without a valid category during grouping:", meal);
+           }
+       });
+       setGroupedLoggedMeals(newGroupedLoggedMeals);
+        console.log("✅ Logged meals grouped for display.");
+
+
+  }, [fridgeIngredients, loggedMeals]); // This effect depends on both states
 
   const navigation = useNavigation();
   
@@ -190,6 +238,23 @@ const Dashboard = () => {
   const handleAskMealBuddy = () => {
     navigation.navigate('Chatbot'); // Navigate to the Chatbot screen
   };
+
+  // Helper to render a single logged meal item
+  const renderLoggedMealItem = (meal, index) => (
+      <View key={meal.id || index} style={styles.loggedMealItemContainer}> {/* Use a dedicated style for the container */}
+          <Text style={styles.loggedMealTitle}>{meal.name || 'Unnamed Meal'}</Text>
+          <View style={styles.loggedMealMacros}>
+              <Text style={styles.loggedMealMacroText}>Calories: {roundToOneDecimal(meal.calories || 0)} kcal</Text>
+              <Text style={styles.loggedMealMacroText}>Protein: {roundToOneDecimal(meal.protein || 0)} g</Text>
+              <Text style={styles.loggedMealMacroText}>Fat: {roundToOneDecimal(meal.total_fat || meal.fats || 0)} g</Text>
+              <Text style={styles.loggedMealMacroText}>Carbs: {roundToOneDecimal(meal.carbs || 0)} g</Text> {/* Added Carbs */}
+          </View>
+          {/* Optionally display ingredients if needed */}
+          {/* {meal.ingredients && Array.isArray(meal.ingredients) && meal.ingredients.length > 0 && (
+              <Text style={styles.loggedMealIngredientsText}>Ingredients: {meal.ingredients.join(', ')}</Text>
+          )} */}
+      </View>
+  );
 
   return (
     <ImageBackground
@@ -221,7 +286,7 @@ const Dashboard = () => {
             entering={FadeIn.delay(300).duration(400)} 
             style={styles.loggedText}
           >
-            Meals logged today: {mealCount}
+            Meals logged today: {loggedMeals.length}
           </Animated.Text>
         </Animated.View>
 
@@ -325,7 +390,7 @@ const Dashboard = () => {
           >
             {/* Recipe Card 1 */}
             <Animated.View 
-              entering={SlideInRight.delay(200).springify()}
+              entering={SlideInUp.delay(200).springify()}
               style={styles.recipeCard}
             >
               <View style={styles.recipeImage} />
@@ -339,7 +404,7 @@ const Dashboard = () => {
             
             {/* Recipe Card 2 */}
             <Animated.View 
-              entering={SlideInRight.delay(300).springify()}
+              entering={SlideInUp.delay(300).springify()}
               style={styles.recipeCard}
             >
               <View style={styles.recipeImage} />
@@ -353,7 +418,7 @@ const Dashboard = () => {
             
             {/* Recipe Card 3 */}
             <Animated.View 
-              entering={SlideInRight.delay(400).springify()}
+              entering={SlideInUp.delay(400).springify()}
               style={styles.recipeCard}
             >
               <View style={styles.recipeImage} />
@@ -367,14 +432,40 @@ const Dashboard = () => {
           </Animated.ScrollView>
         </AnimatedCard>
 
-        {/* Meal Categories */}
+        {/* NEW: Separate Logged Meals Sections by Category - Start index from 3 */}
+        {Object.keys(groupedLoggedMeals).map((category, categoryIndex) => {
+            const mealsInCategory = groupedLoggedMeals[category];
+            // Only render a card for categories with meals
+            if (mealsInCategory.length > 0) {
+                return (
+                    // Create a new AnimatedCard for each category
+                    // Use the categoryIndex to offset the animation delay
+                    <AnimatedCard key={category} index={3 + categoryIndex} style={styles.loggedMealsSectionContainer}> {/* Re-indexed */}
+                        <View style={styles.cardHeader}>
+                            {/* Use the category name as the card title */}
+                            <Text style={styles.cardTitle}>{category}</Text>
+                            {/* Optional: Add an icon here if needed - you would add it next to the Text */}
+                             {/* For example: <Ionicons name={category === 'Breakfast' ? 'sunny' : category === 'Lunch' ? 'sunny-outline' : category === 'Dinner' ? 'moon' : 'star'} size={20} color={Colors.text} style={{ marginLeft: 10 }} /> */}
+                        </View>
+                        <View style={styles.loggedMealsContent}>
+                            {/* Render each meal item using renderLoggedMealItem */}
+                            {mealsInCategory.map((meal, mealIndex) => renderLoggedMealItem(meal, mealIndex))}
+                        </View>
+                    </AnimatedCard>
+                );
+            }
+            return null; // Don't render anything for empty categories
+        })}
+
+        {/* Meal Categories (Your Fridge Items) - These will now appear after Logged Meals cards */}
         {Object.keys(mealIngredients).map((mealType, mealIndex) => (
           mealIngredients[mealType].length > 0 && (
-            <AnimatedCard key={mealType} index={3 + mealIndex} style={styles.mealContainer}>
+            // Adjust the index to appear after the potential logged meal cards (max 4 categories)
+            <AnimatedCard key={mealType} index={7 + mealIndex} style={styles.mealContainer}> {/* Re-indexed */}
               <Text style={styles.mealTitle}>{mealType.charAt(0).toUpperCase() + mealType.slice(1)}</Text>
               {mealIngredients[mealType].map((item, index) => (
-                <Animated.View 
-                  key={index} 
+                <Animated.View
+                  key={index}
                   entering={FadeIn.delay(100 * index)}
                   style={styles.foodItem}
                 >
@@ -407,7 +498,5 @@ const Dashboard = () => {
     </ImageBackground>
   );
 };
-
-
 
 export default Dashboard;
