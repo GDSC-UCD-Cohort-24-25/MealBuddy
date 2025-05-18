@@ -1,4 +1,4 @@
-![MealBuddy Logo](./images/mealbuddy_icon.png)
+![MealBuddy Logo](./MealBuddy/images/mealbuddy_icon.png)
 
 # MealBuddy – AI-Powered Meal Planning App
 
