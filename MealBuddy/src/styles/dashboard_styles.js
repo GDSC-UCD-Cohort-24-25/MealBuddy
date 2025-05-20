@@ -101,15 +101,15 @@ export default StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: SPACING.md,
+    marginBottom: 15,
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
     paddingBottom: SPACING.sm,
   },
   cardTitle: {
-    fontSize: FONT_SIZE.large,
+    fontSize: 18,
     fontWeight: 'bold',
-    color: Colors.text,
+    color: Colors.text || '#333',
   },
   
   // Meal of Day section
@@ -174,34 +174,37 @@ export default StyleSheet.create({
   
   // Nutrition section
   nutritionSummaryCard: {
-    ...CARD_STYLE,
-    padding: SPACING.lg,
+    width: width * 0.9,
+    backgroundColor: Colors.cardBackground || '#FFFFFF',
+    borderRadius: 15,
+    padding: 20, // Ensure padding is applied inside the card
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   nutritionSummaryContent: {
-    paddingVertical: SPACING.sm,
-    alignItems: 'center',
-    width: '100%',
-    paddingHorizontal: 0,
+    // This container holds the large and small tracker rows.
+    // Ensure no conflicting padding or margin that pushes content out.
+    // Adding a little horizontal padding here might help contain the rows.
+    paddingHorizontal: 5, // Added a small horizontal padding to this content container
   },
   largeTrackerRow: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    width: '100%',
-    marginBottom: SPACING.xl,
-    paddingHorizontal: 0,
+    justifyContent: 'space-around', // Use space-around for even distribution including ends
+    marginBottom: 20,
+    // Removed marginHorizontal if previously added
   },
   smallTrackerRow: {
     flexDirection: 'row',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    width: '110%',
-    marginTop: SPACING.xl,
-    marginBottom: SPACING.md,
-    paddingLeft: -10, // Add left padding to shift trackers left
-    paddingRight: 0,
-    overflow: 'visible',
-    gap: 0, // Add spacing between items
+    // Use space-around to distribute space evenly between and around items.
+    // Ensure the total width of items + space fits within the parent.
+    justifyContent: 'space-around', // Reverted to space-around, combined with paddingHorizontal on content
+    // Add flexWrap in case they still don't fit, although space-around should help
+    flexWrap: 'wrap', // Added flexWrap as a fallback
+    // Removed marginHorizontal if previously added
   },
   
   // Suggested recipes section
@@ -327,5 +330,73 @@ export default StyleSheet.create({
     fontSize: FONT_SIZE.medium,
     fontWeight: '600',
     marginLeft: SPACING.xs,
+  },
+  
+  // NEW STYLES FOR LOGGED MEALS SECTION
+  loggedMealsSectionContainer: {
+    width: width * 0.9, // Match other main cards
+    backgroundColor: Colors.cardBackground || '#FFFFFF', // Consistent card background color, fallback to white
+    borderRadius: 15, // Match border radius
+    padding: 20, // Match padding
+    marginBottom: 20, // Space below the section
+    shadowColor: '#000', // Consistent shadow
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3, // for Android
+  },
+  loggedMealsContent: {
+    // Add padding or other styles if needed for the content area within the section card
+    // paddingHorizontal: 10, // Example
+  },
+  mealCategoryGroup: {
+    marginBottom: 15, // Space between meal categories (Breakfast, Lunch, etc.)
+    // Optional: add padding or margin if categories need more separation
+  },
+  mealCategoryHeader: {
+    fontSize: 16, // Consistent header size
+    fontWeight: 'bold',
+    color: Colors.text || '#333333', // Consistent text color, fallback to dark gray
+    marginBottom: 10, // Space below header
+    borderBottomWidth: 1, // Optional: Add a subtle line below the category name
+    borderBottomColor: Colors.divider || '#eeeeee', // Assuming a divider color is defined, fallback to light gray
+    paddingBottom: 5, // Space between text and line
+  },
+  loggedMealItemContainer: { // Style for each individual logged meal card
+    backgroundColor: Colors.innerCardBackground || Colors.cardBackground || '#FFFFFF', // Background for individual meal item, fallback to white
+    borderRadius: 10, // Slightly smaller border radius than main card
+    padding: 15, // Inner padding
+    marginBottom: 10, // Space between individual meal cards
+    shadowColor: '#000', // Optional: subtle inner shadow
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1, // for Android
+    borderWidth: 1, // Optional: subtle border
+    borderColor: Colors.border || '#dddddd', // Assuming a border color, fallback to light gray
+  },
+  loggedMealTitle: {
+    fontSize: 15, // Slightly smaller than card title
+    fontWeight: 'bold',
+    color: Colors.text || '#333333',
+    marginBottom: 5, // Space below the meal title
+  },
+  loggedMealMacros: {
+    flexDirection: 'row', // Arrange macros in a row
+    flexWrap: 'wrap', // Allow macros to wrap
+  },
+  loggedMealMacroText: {
+    fontSize: 13, // Smaller font size for macros
+    color: Colors.textSecondary || Colors.text || '#666666', // Use a secondary color or main text color, fallback to gray
+    marginRight: 10, // Space between macro labels
+    marginBottom: 3, // Space below macros if they wrap
+  },
+
+  // Add a style for the container wrapping each small tracker to control spacing
+  smallTrackerContainer: {
+      alignItems: 'center', // Center the tracker within its container
+      // Add horizontal margin to create space between trackers
+      marginHorizontal: 5, // Add horizontal margin between trackers
+      marginBottom: 10, // Add a small bottom margin in case of wrapping
   },
 });
