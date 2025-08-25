@@ -25,7 +25,7 @@ Over one-third of U.S. consumers (38%) frequently don't know what to make at mea
 ## 📺 Demo
 
 [![Watch the MealBuddy Demo](https://img.youtube.com/vi/pTFzHRhEiUc/0.jpg)](https://m.youtube.com/watch?v=pTFzHRhEiUc)
-
+[![Medium Post](https://medium.com/@gdsc_ucdavis/meal-buddy-2c9e1d02b1e1)](https://medium.com/@gdsc_ucdavis/meal-buddy-2c9e1d02b1e1)
 ---
 
 ## 🚀 Features (In Progress)
